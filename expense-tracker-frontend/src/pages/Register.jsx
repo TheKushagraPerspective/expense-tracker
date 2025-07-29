@@ -4,7 +4,7 @@ import { useNavigate , Link } from "react-router-dom";
 
 
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 
 
 const Register = () => {

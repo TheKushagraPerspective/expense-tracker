@@ -2,7 +2,7 @@ import React , {useState , useEffect} from 'react'
 import axios from "axios";
 
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 
 const TransactionList = ({userId}) => {
 
