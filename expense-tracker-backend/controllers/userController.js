@@ -116,7 +116,7 @@ const loginUser = async(req , res) => {
 const updateUser = async(req , res) => {
     try {
         
-        const {id} = req.params;
+        const userId = req.user.userId; // From authMiddleware
         const updateData = req.body;
 
         if(!updateData || Object.keys(updateData).length === 0) {
@@ -129,7 +129,7 @@ const updateUser = async(req , res) => {
         }
 
         const updatedUser = await User.findByIdAndUpdate(
-            id,
+            userId,
             updateData,
             {new: true},
         )

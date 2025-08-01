@@ -29,7 +29,13 @@ const TransactionList = ({userId}) => {
     const fetchCategory = async() => {
         try {
             
-            const response = await axios.get(`${BASE_URL}/api/category?userId=${userId}`);
+            const response = await axios.get(`${BASE_URL}/api/category`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
             setCategoryList(response.data);            
 
         } catch (error) {
@@ -43,7 +49,6 @@ const TransactionList = ({userId}) => {
         try {
             
             const params = new URLSearchParams();
-            params.append("userId" , userId);
             params.append("page", currentPage);          // <-- Send current page
             params.append("limit", 8);            // <-- Set limit per page
             if(filters.startDate) params.append("startDate" , filters.startDate);
@@ -51,7 +56,13 @@ const TransactionList = ({userId}) => {
             if(filters.type) params.append("type" , filters.type);
             if(filters.search) params.append("search" , filters.search);
 
-            const response = await axios.get(`${BASE_URL}/api/transaction?${params.toString()}`);
+            const response = await axios.get(`${BASE_URL}/api/transaction?${params.toString()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
  
             setTransactionList(response.data.paginatedTransactions);
             setTotalPage(response.data.totalPage);
@@ -99,8 +110,13 @@ const TransactionList = ({userId}) => {
                 date: formData.date,
                 categoryId: formData.categoryId,
                 categoryType: type,
-                userId
-            })
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`
+              }
+            });
+            
             setFormData({ amount: "", categoryId: "", note: "", date: "" });
             fetchTransactions();
 
@@ -121,7 +137,13 @@ const TransactionList = ({userId}) => {
 
     const handleOnRemove = async(idToRemove) => {
         try {
-            await axios.delete(`${BASE_URL}/api/transaction/${idToRemove}`);
+            await axios.delete(`${BASE_URL}/api/transaction/${idToRemove}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
             await fetchTransactions();
         } catch (error) {
             console.log("Error in deleting the transaction" , error);

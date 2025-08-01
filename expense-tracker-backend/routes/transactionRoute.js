@@ -7,22 +7,23 @@ const {
     updateTransaction,
     deleteTransaction
 } = require("../controllers/transactionController");
+const authMiddleware = require("../middleware/authMiddleware")
 
 
 // POST /api/transaction
-router.post("/", newTransaction);
+router.post("/", authMiddleware , newTransaction);
 
 
-// GET /api/transaction?userId=xxx
-router.get("/", getTransaction);
+// GET /api/transaction
+router.get("/", authMiddleware , getTransaction);
 
 
 // PUT /api/transaction/:id
-router.put("/:id", updateTransaction);
+router.put("/:id", authMiddleware , updateTransaction);
 
 
 // DELETE /api/transaction/:id
-router.delete("/:id", deleteTransaction);
+router.delete("/:id", authMiddleware , deleteTransaction);
 
 
 module.exports = router;

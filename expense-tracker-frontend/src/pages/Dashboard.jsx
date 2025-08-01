@@ -62,12 +62,17 @@ const Dashboard = () => {
       const startDate = `${year}-${month}-01`;
       const endDate = `${year}-${month}-${lastDay}`;
 
-      params.append("userId" , userId);
       params.append("startDate" , startDate);
       params.append("endDate" , endDate);
 
       try {
-        const response = await axios.get(`${BASE_URL}/api/transaction?${params.toString()}`);
+        const response = await axios.get(`${BASE_URL}/api/transaction?${params.toString()} `,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
         setMonthlyTransactions(response.data.paginatedTransactions);
         console.log(response.data.paginatedTransactions)
       } catch (error) {
@@ -103,12 +108,17 @@ const Dashboard = () => {
       const startDate = `${year}-01-01`;
       const endDate = `${year}-12-31`;
 
-      params.append("userId" , userId);
       params.append("startDate" , startDate);
       params.append("endDate" , endDate);
 
       try {
-        const response = await axios.get(`${BASE_URL}/api/transaction?${params.toString()}`);
+        const response = await axios.get(`${BASE_URL}/api/transaction?${params.toString()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
         setYearlyTransactions(response.data.paginatedTransactions);
         console.log(response.data.paginatedTransactions)
       } catch (error) {

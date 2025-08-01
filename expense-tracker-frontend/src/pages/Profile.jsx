@@ -9,6 +9,7 @@ const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 
 const Profile = () => {
 
+  const [token , setToken] = useState("");
   const [user , setUser] = useState(null);
   const [userId , setuserId] = useState("");
   const [isEditing , setIsEditing] = useState({
@@ -25,7 +26,7 @@ const Profile = () => {
   useEffect(() => {
       const token = localStorage.getItem("token");
       const userFromStorage = localStorage.getItem("user");
-
+      
       if(token && userFromStorage) {
           try {
             
@@ -33,7 +34,8 @@ const Profile = () => {
             const userData = JSON.parse(userFromStorage);
             setuserId(payload.userId);
             setUser(userData);
-
+            setToken(token);
+            
           } catch (error) {
             console.log("Invalid Token");
           }
@@ -57,8 +59,13 @@ const Profile = () => {
       try {
 
         if(user) {
-            const response = await axios.put(`${BASE_URL}/api/user/${userId}` , {
+            const response = await axios.put(`${BASE_URL}/api/user` , {
               [field] : formData[field]
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
             });
             
             if(response.data.userData) {

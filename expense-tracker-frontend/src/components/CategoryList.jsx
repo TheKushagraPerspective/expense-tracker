@@ -29,8 +29,13 @@ const CategoryList = ({userId}) => {
             const response = await axios.post(`${BASE_URL}/api/category` , {
                 name: formData.name,
                 type: formData.type,
-                userId: userId,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`
+              }
             });
+
             console.log(response.data);
             setFormData({name: "" , type: "income"});
             setShowForm(false);
@@ -52,7 +57,13 @@ const CategoryList = ({userId}) => {
 
     const handleOnRemove = async(idToRemove) => {
         try {
-            await axios.delete(`${BASE_URL}/api/category/${idToRemove}`);
+            await axios.delete(`${BASE_URL}/api/category/${idToRemove}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
             fetchCategories();
         } catch (error) {
             console.log("Error in deleting the category" , error);
@@ -64,7 +75,13 @@ const CategoryList = ({userId}) => {
     
     const fetchCategories = async() => {
         try {
-            const response = await axios.get(`${BASE_URL}/api/category?userId=${userId}`);
+            const response = await axios.get(`${BASE_URL}/api/category`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
             const allCategories = response.data || [];
 
             setIncomeCategories(allCategories.filter(cat => cat.type === "income"));

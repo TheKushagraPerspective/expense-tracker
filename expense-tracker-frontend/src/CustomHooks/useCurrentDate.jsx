@@ -3,7 +3,7 @@ import {useState , useEffect} from 'react';
 
 const useCurrentDate = () => {
     const [currentDate , setCurrentDate] = useState({
-        lastdateOfMonth : '30',
+        lastdateOfMonth : '31',
         month: 'January',
         year: 2025
     })
@@ -30,7 +30,7 @@ const useCurrentDate = () => {
 
         const interval = setInterval(() => {
             updateDate();
-        } , 86400000)    // update daily
+        } , 24 * 60 * 60 * 1000)    // update daily
 
         return  () => clearInterval(interval);
     } , []);

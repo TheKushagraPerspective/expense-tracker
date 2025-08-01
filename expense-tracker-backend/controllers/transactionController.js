@@ -5,7 +5,8 @@ const Transaction = require("../models/Transaction");
 const newTransaction = async(req , res) => {
     try {
         
-        const {amount , note , date , categoryId , categoryType , userId} = req.body;
+        const {amount , note , date , categoryId , categoryType} = req.body;
+        const userId = req.user.userId; // From authMiddleware
 
         if (
             amount === undefined ||
@@ -34,7 +35,8 @@ const newTransaction = async(req , res) => {
 const getTransaction = async(req , res) => {
     try {
         
-        const { userId , startDate , endDate , type , search } = req.query;
+        const userId = req.user.userId; // From authMiddleware
+        const { startDate , endDate , type , search } = req.query;
         const page = req.query.page ? parseInt(req.query.page) : null;
         const limit = req.query.limit ? parseInt(req.query.limit) : null;
         const skip = page && limit ? (page - 1) * limit : 0;
@@ -103,7 +105,7 @@ const updateTransaction = async(req , res) => {
         }
 
         const updated = await Transaction.findByIdAndUpdate(
-            id,
+            {_id : id , userId : req.user.userId},
             {amount, note, date, categoryId, categoryType},
             {new : true}
         );
@@ -112,7 +114,7 @@ const updateTransaction = async(req , res) => {
             return res.status(404).json({ message: "Transaction not found" });
         }
 
-        return res.statue(201).json(updated);
+        return res.status(201).json(updated);
 
     } catch (error) {
         res.status(500).json({ message: "Server error in updateTransaction"});
@@ -131,7 +133,10 @@ const deleteTransaction = async(req , res) => {
             return res.status(400).json({ message: "id is required" });
         }
 
-        const deleted = await Transaction.findByIdAndDelete(id);
+        const deleted = await Transaction.findByIdAndDelete({
+            _id : id , 
+            userId : req.user.userId
+        });
 
         if(!deleted) {
             return res.status(404).json({ message: "Transaction not found" });

@@ -14,7 +14,12 @@ connectionDB();
 
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: ["http://localhost:5173", "https://expense-tracker-frontend-71kl.onrender.com"], // your frontend port
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"], // allow token header
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 

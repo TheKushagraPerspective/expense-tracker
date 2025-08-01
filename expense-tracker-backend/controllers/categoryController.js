@@ -5,10 +5,11 @@ const Category = require("../models/Category");
 const newCategory = async(req , res) => {
     try {
         
-        const {name , type , userId} = req.body;
+        const {name , type} = req.body;
+        const userId = req.user.userId; // From authMiddleware
 
-        if (!name || !type || !userId) {
-            return res.status(400).json({ message: "All fields are required" });
+        if (!name || !type) {
+            return res.status(400).json({ message: "Name and type are required" });
         }
 
         const category = new Category({name , type , userId});
@@ -26,7 +27,7 @@ const newCategory = async(req , res) => {
 const getCategory = async(req , res) => {
     try {
         
-        const {userId} = req.query;
+        const userId = req.user.userId; // From authMiddleware
 
         if (!userId) {
             return res.status(400).json({ message: "userId is required" });
@@ -50,7 +51,7 @@ const updateCategory = async(req , res) => {
         const {name , type} = req.body;
 
         const updateCategory = await Category.findByIdAndUpdate(
-            id,
+            { _id: id, userId: req.user.userId }, // From authMiddleware
             {name , type},
             {new : true}
         )
@@ -75,7 +76,10 @@ const deleteCategory = async(req , res) => {
         const {id} = req.params
         console.log(id);
 
-        const deleted = await Category.findByIdAndDelete(id)
+        const deleted = await Category.findByIdAndDelete({
+            _id: id,
+            userId: req.user.userId, // ensure only owner can delete
+        });
 
         if(!deleted) {
             return res.status(400).json({msg : "Category not found"})
