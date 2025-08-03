@@ -108,14 +108,15 @@ const Setting = () => {
 
     const handleOnUpdatePassword = async(e) => {
         e.preventDefault();
+        const {oldPassword , newPassword , confirmPassword} = formData;
+        
+        if(!oldPassword || !newPassword || !confirmPassword) {
+            return alert("All fields are required to fill");
+        }
 
         try {
             const token = localStorage.getItem("token");
-            const {oldPassword , newPassword , confirmPassword} = formData;
 
-            if(!oldPassword || !newPassword || !confirmPassword) {
-                return alert("All fields are required to fill");
-            }
 
             const res = await axios.put(`${BASE_URL}/api/user/update-password` , 
                 { oldPassword , newPassword , confirmPassword } ,
@@ -126,13 +127,16 @@ const Setting = () => {
                 }
             )
 
-            alert("Password has been successfully changed. We're redirecting you to login page to login again with new Credentials...");
+            alert("Password has been successfully changed. Redirecting you to login...");
             setFormData({
                 oldPassword: "",
                 newPassword: "",
                 confirmPassword: ""
             })
             setWantToChangePass(prev => !prev);
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate("/");
 
         } catch (error) {
             console.error(error);

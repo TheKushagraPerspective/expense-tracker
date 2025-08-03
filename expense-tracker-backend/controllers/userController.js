@@ -15,6 +15,10 @@ const registerUser = async (req , res) => {
             return res.status(400).json({ msg: "All fields are required" });
         }
 
+        if (password.length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters long" });
+        }
+
         const existingUser = await User.findOne({email});
 
         if(existingUser) {
@@ -220,15 +224,22 @@ const updatePassword = async(req , res) => {
     const {oldPassword , newPassword , confirmPassword} = req.body;
 
     try {
-        const user = await User.findOne({_id : userId});
-        const match = await bcrypt.compare(oldPassword , user.password);
+        const existingUser = await User.findOne({_id : userId});
+        if (!existingUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters long" });
+        }
+
+        const match = await bcrypt.compare(oldPassword , existingUser.password);
         if(!match) {
             return res.status(401).json({message: "Old Password is wrong"});
         }
 
         if(newPassword !== confirmPassword) {
-            return res.status(401).json({message: "Confirm Password is not matched with New Password"});
+            return res.status(401).json({message: "Confirm Password must be equal to New Password"});
         }
 
         
@@ -242,8 +253,8 @@ const updatePassword = async(req , res) => {
 
         // OR
         // we can do like this also
-        user.password = await bcrypt.hash(newPassword , 10);
-        await User.save();
+        existingUser.password = await bcrypt.hash(newPassword , 10);
+        await existingUser.save();
 
         return res.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
