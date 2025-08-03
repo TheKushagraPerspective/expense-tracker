@@ -199,7 +199,7 @@ const updateCurrency = async(req , res) => {
 
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            {currency},
+            {currency: currency},
             {new : true}
         );
 
@@ -212,6 +212,43 @@ const updateCurrency = async(req , res) => {
         return res.status(500).json({ message: "Server Error", error: err.message });
     }
 
+}
+
+
+const updatePassword = async(req , res) => {
+    const userId = req.user.userId;
+    const {oldPassword , newPassword , confirmPassword} = req.body;
+
+    try {
+        const user = await User.findOne({_id : userId});
+        const match = await bcrypt.compare(oldPassword , user.password);
+
+        if(!match) {
+            return res.status(401).json({message: "Old Password is wrong"});
+        }
+
+        if(newPassword !== confirmPassword) {
+            return res.status(401).json({message: "Confirm Password is not matched with New Password"});
+        }
+
+        
+        // we can do like this 
+        // const hashedPassword = await bcrypt.hash(newPassword , 10);
+        // const res = await User.findByIdAndUpdate(
+        //     userId,
+        //     {password: newPassword},
+        //     {new: true}
+        // )
+
+        // OR
+        // we can do like this also
+        user.password = await bcrypt.hash(newPassword , 10);
+        await User.save();
+
+        return res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+        return res.status(500).json({message: "Server Error"});
+    }
 }
 
 
@@ -241,5 +278,6 @@ module.exports = {
     getUserDetails,
     updateUser,
     updateCurrency,
+    updatePassword,
     deleteAccount
 }

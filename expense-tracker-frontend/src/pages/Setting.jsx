@@ -13,6 +13,11 @@ const Setting = () => {
 
     const navigate = useNavigate();
     const [wantToChangePass , setWantToChangePass] = useState(false);
+    const [formData , setFormData] = useState({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+    })
 
 
     useEffect(() => {
@@ -94,6 +99,50 @@ const Setting = () => {
 
 
 
+    const handleOnInputChange = (e) => {
+        setFormData((prev) => ({
+            ...prev,
+            [e.target.name]: e.target.value,
+        }));
+    }
+
+    const handleOnUpdatePassword = async(e) => {
+        e.preventDefault();
+
+        try {
+            const token = localStorage.getItem("token");
+            const {oldPassword , newPassword , confirmPassword} = formData;
+
+            if(!oldPassword || !newPassword || !confirmPassword) {
+                return alert("All fields are required to fill");
+            }
+
+            const res = await axios.put(`${BASE_URL}/api/user/update-password` , 
+                { oldPassword , newPassword , confirmPassword } ,
+                {
+                    headers : {
+                        Authorization : `Bearer ${token}`
+                    }
+                }
+            )
+
+            alert("Password has been successfully changed");
+            setFormData({
+                oldPassword: "",
+                newPassword: "",
+                confirmPassword: ""
+            })
+            setWantToChangePass(prev => !prev);
+
+        } catch (error) {
+            console.error(error);
+            alert(
+                error?.response?.data?.message ||
+                "Something went wrong. Please try again."
+            );
+        }
+    }
+
 
   return (
     <>
@@ -151,8 +200,11 @@ const Setting = () => {
                             <input
                                 id="old-password"
                                 type="password"
+                                name="oldPassword"
                                 className='border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
                                 placeholder="Enter your old password"
+                                value={formData.oldPassword}
+                                onChange={(e) => handleOnInputChange(e)}
                             />
                         </div>
 
@@ -161,8 +213,11 @@ const Setting = () => {
                             <input
                                 id="new-password"
                                 type="password"
+                                name="newPassword"
                                 className='border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
                                 placeholder="Enter new password"
+                                value={formData.newPassword}
+                                onChange={(e) => handleOnInputChange(e)}
                             />
                         </div>
 
@@ -171,12 +226,18 @@ const Setting = () => {
                             <input
                                 id="confirm-password"
                                 type="password"
+                                name="confirmPassword"
                                 className='border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
                                 placeholder="Confirm new password"
+                                value={formData.confirmPassword}
+                                onChange={(e) => handleOnInputChange(e)}
                             />
                         </div>
 
-                        <button className='bg-green-600 text-white px-4 py-2 rounded-md shadow hover:bg-green-700 transition duration-200 mt-4 self-start'>
+                        <button 
+                        className='bg-green-600 text-white px-4 py-2 rounded-md shadow hover:bg-green-700 transition duration-200 mt-4 self-start'
+                        onClick={handleOnUpdatePassword}
+                        >
                             Update Password
                         </button>
                     </div>
