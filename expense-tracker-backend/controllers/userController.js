@@ -12,7 +12,7 @@ const registerUser = async (req , res) => {
         const {name , email , password , mobile} = req.body;
 
         if(!name || !email || !password || !mobile) {
-            return res.status(400).json({ msg: "All fields are required" });
+            return res.status(400).json({ message: "All fields are required" });
         }
 
         if (password.length < 6) {
@@ -22,7 +22,7 @@ const registerUser = async (req , res) => {
         const existingUser = await User.findOne({email});
 
         if(existingUser) {
-            return res.status(401).json({ msg: "Email already in use" });
+            return res.status(401).json({ message: "Email already in use" });
         }
 
         const hashedPassword = await bcrypt.hash(password , 10);
@@ -56,12 +56,12 @@ const registerUser = async (req , res) => {
 
         return res.status(200).json({
             success : true,
-            msg : "User registered successfully",
+            message : "User registered successfully",
             userId : newUser._id
         });
     } catch (error) {
         console.log("Error in register " , error);
-        return res.status(500).json({msg : "Server error", error})
+        return res.status(500).json({message : "Server error", error})
     }
 
 };
@@ -236,6 +236,10 @@ const updatePassword = async(req , res) => {
         const match = await bcrypt.compare(oldPassword , existingUser.password);
         if(!match) {
             return res.status(401).json({message: "Old Password is wrong"});
+        }
+
+        if(oldPassword === newPassword) {
+            return res.status(401).json({message: "Old Password and New Password must be different"})
         }
 
         if(newPassword !== confirmPassword) {

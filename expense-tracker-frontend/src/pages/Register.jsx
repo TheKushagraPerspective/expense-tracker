@@ -60,16 +60,16 @@ const Register = () => {
           const data = response.data;
 
           if(data.success) {
-              alert(data.msg);
+              alert(data.message);
               navigate("/");   //navigate to login page
           }
           else {
-            setError(data.msg || "Register failed");
+            setError(data.message || "Register failed");
           }
 
       } catch (error) {
-          if(error.response && error.response.data && error.response.data.msg) {
-            setError(error.response.data.msg);
+          if(error.response && error.response.data && error.response.data.message) {
+            setError(error.response.data.message);
           }
           else {
             setError("SignUp failed. Please check your credentials or try again later.");
