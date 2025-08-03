@@ -18,19 +18,35 @@ const Dashboard = () => {
   const [yearlyTransactions , setYearlyTransactions] = useState([]);
   const [income , setIncome] = useState(0);    // current month income
   const [expense , setExpense] = useState(0);   // current month expense
+  const [currency , setCurrency] = useState("INR");
+
+
+
 
 
   useEffect(() => {
-      const token = localStorage.getItem("token");
+      const fetchProfile = async() => {
+        const token = localStorage.getItem("token");
 
-      if(token) {
-          try {
-            const payload = JSON.parse(atob(token.split(".")[1]));
-            setUserId(payload.userId);
-          } catch (err) {
-            console.error("Invalid token");
-          }
-      }
+        if(token) {
+            try {
+              const payload = JSON.parse(atob(token.split(".")[1]));
+              setUserId(payload.userId);
+
+              const res = await axios.get(`${BASE_URL}/api/user/profile` , {
+                headers : {
+                  Authorization : `Bearer ${token}`
+                }
+              })
+
+              setCurrency(res.data.data.currency);
+            } catch (err) {
+              console.error("Invalid token");
+            }
+        }
+      };
+
+      fetchProfile();
   } , [])
 
 
@@ -130,21 +146,21 @@ const Dashboard = () => {
   return (
     <>
         <div className="mb-6">
-            <DashboardTop income={income} expense={expense} />  
+            <DashboardTop income={income} expense={expense} currency={currency} />  
         </div> 
 
         <div>
             <div className="flex flex-col md:flex-row gap-6">
                 <div className="w-full md:w-1/2 ">
-                    <ExpensePieChart transaction={monthlytransactions} />
+                    <ExpensePieChart filteredMonthlyTransactions={monthlytransactions} currency={currency} />
                 </div>
                 <div className="w-full md:w-1/2">
-                    <MonthlyBarChart transaction={monthlytransactions} />
+                    <MonthlyBarChart filteredMonthlyTransactions={monthlytransactions} currency={currency} />
                 </div> 
             </div> 
 
             <div className="w-full ">
-                <YearlyLineChart transaction={yearlyTransactions} />  
+                <YearlyLineChart filteredYearlyTransactions={yearlyTransactions} currency={currency} />  
             </div> 
         </div>       
     </>

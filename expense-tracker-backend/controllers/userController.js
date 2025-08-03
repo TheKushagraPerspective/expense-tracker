@@ -208,10 +208,29 @@ const updateCurrency = async(req , res) => {
             message: "Currency updated", 
             currency: updatedUser.currency 
         });
-    } catch (error) {
+    } catch (err) {
         return res.status(500).json({ message: "Server Error", error: err.message });
     }
 
+}
+
+
+const deleteAccount = async(req , res) => {
+    const userId = req.user.userId;
+
+    try {
+        const deletedUser = await User.findByIdAndDelete({_id : userId});
+
+        return res.status(200).json({
+            success : true,
+            message : "User Account Deleted Successfully",
+            data : deletedUser
+        })
+    } catch (err) {
+        return res.status(500).json({
+            message: "Server Error" , error: err.message
+        })
+    }
 }
 
 
@@ -221,5 +240,6 @@ module.exports = {
     loginUser,
     getUserDetails,
     updateUser,
-    updateCurrency
+    updateCurrency,
+    deleteAccount
 }

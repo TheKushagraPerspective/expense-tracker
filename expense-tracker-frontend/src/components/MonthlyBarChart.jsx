@@ -7,12 +7,31 @@ import useCurrentDate from "../CustomHooks/useCurrentDate";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-const MonthlyBarChart = ({ transaction }) => {
+const MonthlyBarChart = ({ filteredMonthlyTransactions , currency }) => {
 
   const monthNames = [
       "January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December"
   ];
+
+
+  const currencySymbols = {
+    INR: '₹',
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+  };
+
+  const conversionRate = {
+    INR: 1,
+    USD: 85,
+    EUR: 90,
+    GBP: 100,
+    JPY: 0.6,
+  }
+
+
   let {lastdateOfMonth , month: currentMonth , year: currentYear} = useCurrentDate();
   currentMonth = monthNames[currentMonth-1];
 
@@ -20,10 +39,12 @@ const MonthlyBarChart = ({ transaction }) => {
   // Group expenses by date
   const dailyTotals = {};
 
-  transaction.forEach((txn) => {
+  filteredMonthlyTransactions.forEach((txn) => {
     const date = new Date(txn.date).getDate(); // Get day of month (1-31)
     if (txn.categoryType === "expense") {
-      dailyTotals[date] = (dailyTotals[date] || 0) + txn.amount;
+      const rate = conversionRate[currency];
+      const amountInSelectedCurrency = txn.amount / rate;
+      dailyTotals[date] = (dailyTotals[date] || 0) + amountInSelectedCurrency;
     }
   });
 
@@ -35,7 +56,7 @@ const MonthlyBarChart = ({ transaction }) => {
     labels: labels.map((d) => `Day ${d}`),
     datasets: [
       {
-        label: "Daily Expenses",
+        label: `Daily Expenses ${currencySymbols[currency]}`,
         data,
         backgroundColor: "#f87171", // red-400
         borderRadius: 6,
@@ -55,7 +76,7 @@ const MonthlyBarChart = ({ transaction }) => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: (value) => `₹${value}`,
+          callback: (value) => `${currencySymbols[currency]}${value}`,
         },
       },
     },

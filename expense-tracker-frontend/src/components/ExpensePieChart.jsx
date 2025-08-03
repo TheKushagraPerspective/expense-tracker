@@ -8,12 +8,31 @@ import useCurrentDate from '../CustomHooks/useCurrentDate';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 
-const ExpensePieChart = ({ transaction }) => {
+const ExpensePieChart = ({ filteredMonthlyTransactions , currency }) => {
   
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
+
+
+  const currencySymbols = {
+    INR: '₹',
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+  };
+
+  const conversionRate = {
+    INR: 1,
+    USD: 85,
+    EUR: 90,
+    GBP: 100,
+    JPY: 0.6,
+  }
+
+
   let {lastdateOfMonth , month: currentMonth , year: currentYear} = useCurrentDate();
   currentMonth = monthNames[currentMonth-1];
   
@@ -21,10 +40,12 @@ const ExpensePieChart = ({ transaction }) => {
   // Grouping by category name
   const categoryWiseExpenses = {};
 
-  transaction.forEach((txn) => {
+  filteredMonthlyTransactions.forEach((txn) => {
     if (txn.categoryType === "expense") {
       const catName = txn.categoryId.name;
-      categoryWiseExpenses[catName] = (categoryWiseExpenses[catName] || 0) + txn.amount;
+      const rate = conversionRate[currency];
+      const amountInSelectedCurrency = (txn.amount / rate);
+      categoryWiseExpenses[catName] = (categoryWiseExpenses[catName] || 0) + amountInSelectedCurrency;
     }
   });
 
@@ -41,7 +62,7 @@ const ExpensePieChart = ({ transaction }) => {
     labels,
     datasets: [
       {
-        label: "Expense",
+        label: `Expense ${currencySymbols[currency]}`,
         data: values,
         backgroundColor: colors.slice(0, labels.length),
         borderColor: "#fff",

@@ -1,5 +1,7 @@
 import React, { useState , useEffect } from 'react'
 import axios from "axios"
+import {useNavigate} from 'react-router-dom'
+
 
 
 const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
@@ -8,6 +10,9 @@ const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 const Setting = () => {
 
     const [currency , setCurrency] = useState("INR");
+
+    const navigate = useNavigate();
+    const [wantToChangePass , setWantToChangePass] = useState(false);
 
 
     useEffect(() => {
@@ -63,10 +68,36 @@ const Setting = () => {
 
 
 
+    const handleOnDeleteAccount = async(e) => {
+        const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.")
+        if(!confirmed) {
+            return ;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.delete(`${BASE_URL}/api/user/delete-account` , {
+                headers : {
+                    Authorization : `Bearer ${token}`
+                }
+            })
+
+            alert(res.data.message || "Account Deleted Successfully");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate("/");   // redirect to login page
+
+        } catch (err) {
+            alert(err.response.data.message || "Account deletion failed");
+        }
+    }
+
+
+
 
   return (
     <>
-        {/* Welcome Section */}
+        {/* General Preference Section */}
         <div className='mx-auto max-w-5xl mt-5 mb-12 px-4'>
             <div className="shadow-lg  py-10 rounded-lg px-6">
                 <h1 className='text-xl md:text-2xl font-semibold text-gray-800 tracking-wide'>General Preferences</h1>
@@ -96,7 +127,73 @@ const Setting = () => {
         </div>
 
 
-        <div className="border-t border-gray-300 my-8"></div>
+
+
+        {/* Account Setting Section */}
+        <div className='mx-auto max-w-5xl mt-5 mb-12 px-4'>
+            <div className="shadow-lg  py-10 rounded-lg px-6">
+                <h1 className='text-xl md:text-2xl font-semibold text-gray-800 tracking-wide'>Account Setting</h1>
+                <div className="flex flex-col gap-2 w-full mx-auto mt-6">
+                    
+                    <div className='items-center mb-4'>
+                        <button
+                            className='bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-700 transition duration-200'
+                            onClick={() => setWantToChangePass(prev => !prev)}
+                        >
+                            {wantToChangePass ? "Cancel" : "Change Password"}
+                        </button>
+                    </div>
+
+                    {wantToChangePass && (
+                    <div className='bg-gray-100 p-6 rounded-lg shadow-inner space-y-4'>
+                        <div className='flex flex-col'>
+                            <label htmlFor="old-password" className='text-sm font-medium text-gray-700 mb-1'>Old Password</label>
+                            <input
+                                id="old-password"
+                                type="password"
+                                className='border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                                placeholder="Enter your old password"
+                            />
+                        </div>
+
+                        <div className='flex flex-col'>
+                            <label htmlFor="new-password" className='text-sm font-medium text-gray-700 mb-1'>New Password</label>
+                            <input
+                                id="new-password"
+                                type="password"
+                                className='border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                                placeholder="Enter new password"
+                            />
+                        </div>
+
+                        <div className='flex flex-col'>
+                            <label htmlFor="confirm-password" className='text-sm font-medium text-gray-700 mb-1'>Confirm Password</label>
+                            <input
+                                id="confirm-password"
+                                type="password"
+                                className='border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                                placeholder="Confirm new password"
+                            />
+                        </div>
+
+                        <button className='bg-green-600 text-white px-4 py-2 rounded-md shadow hover:bg-green-700 transition duration-200 mt-4 self-start'>
+                            Update Password
+                        </button>
+                    </div>
+                    )}
+
+
+                    <div className='items-center '>
+                        <button
+                            className='bg-red-600 text-white px-6 py-2 rounded-lg shadow-lg hover:bg-red-700 transition duration-200'
+                            onClick={handleOnDeleteAccount}
+                        >
+                            Delete Account
+                        </button>
+                    </div>
+                </div> 
+            </div>
+        </div>
 
 
         

@@ -16,8 +16,24 @@ import useCurrentDate from "../CustomHooks/useCurrentDate";
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
 
-const YearlyLineChart = ({ transaction }) => {
+const YearlyLineChart = ({ filteredYearlyTransactions , currency }) => {
 
+
+  const currencySymbols = {
+    INR: '₹',
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+  };
+
+  const conversionRate = {
+    INR: 1,
+    USD: 85,
+    EUR: 90,
+    GBP: 100,
+    JPY: 0.6,
+  }
 
   let {lastdateOfMonth , month: currentMonth , year: currentYear} = useCurrentDate();  // currentMonth is having 1-12, 1- jan, ..., 12-dec
 
@@ -25,14 +41,18 @@ const YearlyLineChart = ({ transaction }) => {
   const monthlyExpense = Array(12).fill(0);
   const monthlyIncome = Array(12).fill(0);
 
-  transaction.forEach((txn) => {
+  filteredYearlyTransactions.forEach((txn) => {
     const date = new Date(txn.date);
     const month = date.getMonth(); // 0 = Jan, 11 = Dec
 
     if (txn.categoryType === "expense") {
-      monthlyExpense[month] += txn.amount;
+      const rate = conversionRate[currency];
+      const amountInSelectedCurrency = txn.amount / rate;
+      monthlyExpense[month] += amountInSelectedCurrency;
     } else if (txn.categoryType === "income") {
-      monthlyIncome[month] += txn.amount;
+      const rate = conversionRate[currency];
+      const amountInSelectedCurrency = txn.amount / rate;
+      monthlyIncome[month] += amountInSelectedCurrency;
     }
   });
 
@@ -43,7 +63,7 @@ const YearlyLineChart = ({ transaction }) => {
     ],
     datasets: [
       {
-        label: "Expenses",
+        label: `Expense ${currencySymbols[currency]}`,
         data: monthlyExpense,
         borderColor: "#f87171",
         backgroundColor: "#fca5a5",
@@ -51,7 +71,7 @@ const YearlyLineChart = ({ transaction }) => {
         fill: false,
       },
       {
-        label: "Income",
+        label: `Income ${currencySymbols[currency]}`,
         data: monthlyIncome,
         borderColor: "#34d399",
         backgroundColor: "#6ee7b7",
@@ -72,7 +92,7 @@ const YearlyLineChart = ({ transaction }) => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: (value) => `₹${value}`,
+          callback: (value) => `${currencySymbols[currency]}${value}`,
         },
       },
     },
