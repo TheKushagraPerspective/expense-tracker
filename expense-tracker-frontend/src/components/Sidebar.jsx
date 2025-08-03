@@ -10,6 +10,7 @@ const Sidebar = () => {
     const handleLogOut = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        alert("Logged out successfully");
         navigate("/");  // to login page
     }
 

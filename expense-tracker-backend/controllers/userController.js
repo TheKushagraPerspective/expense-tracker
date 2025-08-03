@@ -9,9 +9,9 @@ require("dotenv").config();
 const registerUser = async (req , res) => {
     
     try {
-        const {name , email , password} = req.body;
+        const {name , email , password , mobile} = req.body;
 
-        if(!name || !email || !password) {
+        if(!name || !email || !password || !mobile) {
             return res.status(400).json({ msg: "All fields are required" });
         }
 
@@ -22,7 +22,7 @@ const registerUser = async (req , res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password , 10);
-        const newUser = new User({name , email , password : hashedPassword});
+        const newUser = new User({name , email , password : hashedPassword , mobile});
         await newUser.save();
 
         const defaultCategories = [
@@ -112,6 +112,37 @@ const loginUser = async(req , res) => {
 
 
 
+const getUserDetails = async(req , res) => {
+
+    try {
+        const userId = req.user.userId;
+
+        const user = await User.findOne({_id : userId});
+
+        if(!user) {
+            return res.status(400).json({
+                success: false,
+                msg : "User Not Found",
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            msg: "user details found",
+            data: user,
+        })
+    } catch (error) {
+        console.error("Error in getUserDetails:", error.message);
+        return res.status(500).json({
+            success: false,
+            msg: "Server error",
+        });
+    }
+
+}
+
+
+
 
 const updateUser = async(req , res) => {
     try {
@@ -156,10 +187,39 @@ const updateUser = async(req , res) => {
 }
 
 
+const updateCurrency = async(req , res) => {
+
+    try {
+        const userId = req.user.userId;
+        const {currency} = req.body;
+
+        if(!currency) {
+            return res.status(400).json({ message: "Currency is required" });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            {currency},
+            {new : true}
+        );
+
+        return res.status(200).json({ 
+            success : true,
+            message: "Currency updated", 
+            currency: updatedUser.currency 
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Server Error", error: err.message });
+    }
+
+}
+
 
 
 module.exports = {
     registerUser,
     loginUser,
-    updateUser
+    getUserDetails,
+    updateUser,
+    updateCurrency
 }

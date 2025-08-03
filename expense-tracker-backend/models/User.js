@@ -19,7 +19,11 @@ const userSchema = new mongoose.Schema({
     },
     mobile : {
         type : String,
-        default: ""
+        default : ""
+    },
+    currency : {
+        type : String,
+        default : "INR",
     }
 } , {timestamps : true});
 

@@ -14,7 +14,8 @@ const Register = () => {
   const [formData , setFormData] = useState({
       name: "",
       email: "",
-      password: ""
+      password: "",
+      mobile: "",
   })
 
 
@@ -31,9 +32,9 @@ const Register = () => {
   const handleSubmit = async(e) => {
       e.preventDefault();
 
-      const {name , email , password} = formData;
+      const {name , email , password , mobile} = formData;
 
-      if(!name || !email || !password) {
+      if(!name || !email || !password || !mobile) {
           setError("All Fields are required");
           return ;
       }
@@ -53,7 +54,7 @@ const Register = () => {
       try {
         
           const response = await axios.post(`${BASE_URL}/api/user/register` , {
-            name , email , password
+            name , email , password , mobile
           });
 
           const data = response.data;
@@ -144,6 +145,25 @@ const Register = () => {
                 placeholder="Enter password"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.password}
+                onChange={handleChange}
+              />
+            </div>
+
+
+            <div className="mb-4">
+              <label
+                htmlFor="mobile"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Mobile
+              </label>
+              <input
+                type="Number"
+                id="mobile"
+                name="mobile"
+                placeholder="Enter mobile number"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={formData.mobile}
                 onChange={handleChange}
               />
             </div>

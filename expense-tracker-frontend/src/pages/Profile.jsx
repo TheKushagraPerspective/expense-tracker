@@ -11,7 +11,7 @@ const Profile = () => {
 
   const [token , setToken] = useState("");
   const [user , setUser] = useState(null);
-  const [userId , setuserId] = useState("");
+  // const [userId , setuserId] = useState("");
   const [isEditing , setIsEditing] = useState({
     name : false,
     mobile : false,
@@ -30,9 +30,9 @@ const Profile = () => {
       if(token && userFromStorage) {
           try {
             
-            const payload = JSON.parse(atob(token.split(".")[1]));  // This sets only what's inside the token
+            // const payload = JSON.parse(atob(token.split(".")[1]));  // This sets only what's inside the token
             const userData = JSON.parse(userFromStorage);
-            setuserId(payload.userId);
+            // setuserId(payload.userId);
             setUser(userData);
             setToken(token);
             
