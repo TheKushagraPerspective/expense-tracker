@@ -126,7 +126,7 @@ const Setting = () => {
                 }
             )
 
-            alert("Password has been successfully changed");
+            alert("Password has been successfully changed. We're redirecting you to login page to login again with new Credentials...");
             setFormData({
                 oldPassword: "",
                 newPassword: "",
