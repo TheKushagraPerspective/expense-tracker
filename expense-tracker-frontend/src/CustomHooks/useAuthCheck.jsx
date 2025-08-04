@@ -9,24 +9,37 @@ const useAuthCheck = () => {
 
     useEffect(() => {
 
-        const token = localStorage.getItem("token");
-        if(token) {
+        const interval = setInterval(() => {
+            const token = localStorage.getItem("token");
+
+            if(!token) {
+                toast.warn("You are not logged in.");
+                navigate("/");
+                clearInterval(interval);
+                return ;
+            }
+
+
             try {
                 const decode = jwtDecode(token);
-                const currentTime = Date.now() / 1000;   // in seconds
+                const currentTime = Date.now() / 1000;
 
                 if(decode.exp < currentTime) {
-                    // Token expired
+                    toast.error("Session expired. Redirecting to login...");
                     localStorage.removeItem("token");
-                    toast.warn("Session expired. Please log in again.");
-                    navigate("/");   // redirecting to login page
+                    navigate('/');
+                    clearInterval(interval);
                 }
             } catch (error) {
-                console.log("Token decode error:", error);
+                console.error("Token decode error:", err);
+                toast.error("Invalid session. Redirecting...");
                 localStorage.removeItem("token");
+                clearInterval(interval);
                 navigate("/");
             }
-        }
+        } , 1000);    // Run every second
+
+        return () => clearInterval(interval);
 
     } , [navigate]);
 }

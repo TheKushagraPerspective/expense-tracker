@@ -99,7 +99,7 @@ const loginUser = async(req , res) => {
             {userId : existingUser._id,
              email : existingUser.email},
              process.env.JWT_SECRET,
-            {expiresIn : "2m"}
+            {expiresIn : "10s"}
         );
 
         return res.status(200).json({

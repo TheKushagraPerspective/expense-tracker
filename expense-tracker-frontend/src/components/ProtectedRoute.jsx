@@ -5,7 +5,7 @@ import useAuthCheck from '../CustomHooks/useAuthCheck';
 
 const ProtectedRoute = ({ children }) => {
   
-    useAuthCheck();    // Check token validity on every protected route
+    useAuthCheck();    // Check token validity every second
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
 
