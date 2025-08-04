@@ -23,6 +23,7 @@ const authMiddleware = (req , res , next) => {
         console.log("User decoded from token:", decoded); // 🧪 Debug log
 
         // 5. Move to the next middleware or controller
+        console.log("Decoded token:", decoded); // Make sure userId is present
         next();
     } catch (error) {
         return res.status(401).json({ msg: "Token is invalid or expired" });

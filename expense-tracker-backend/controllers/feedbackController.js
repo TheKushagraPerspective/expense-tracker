@@ -3,6 +3,7 @@ const User = require("../models/User");
 
 const newFeedback = async(req , res) => {
     const userId = req.user.userId;
+    console.log("userId from token:", userId);
     let {fullName , email , category , message , rating} = req.body;
 
     try {
