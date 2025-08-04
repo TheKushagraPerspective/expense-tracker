@@ -6,6 +6,7 @@ require("dotenv").config();
 const userRoute = require("./routes/userRoute");
 const categoryRoute = require("./routes/categoryRoute");
 const transactionRoute = require("./routes/transactionRoute");
+const feedbackRoute = require("./routes/feedbackRoute");
 
 
 
@@ -27,6 +28,7 @@ app.use(express.json());
 app.use("/api/user" , userRoute);
 app.use("/api/category" , categoryRoute);
 app.use("/api/transaction" , transactionRoute);
+app.use("/api/feedback" , feedbackRoute);
 
 
 

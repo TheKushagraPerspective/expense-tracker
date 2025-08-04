@@ -19,6 +19,11 @@ const registerUser = async (req , res) => {
             return res.status(400).json({ message: "Password must be at least 6 characters long" });
         }
 
+         // ✅ Mobile number validation (add this)
+        if (mobile && !/^\d{10}$/.test(mobile)) {
+            return res.status(400).json({ msg: "Invalid mobile number format" });
+        }
+
         const existingUser = await User.findOne({email});
 
         if(existingUser) {
