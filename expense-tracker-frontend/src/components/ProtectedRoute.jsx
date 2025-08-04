@@ -1,9 +1,11 @@
 import React , {useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from './MainLayout';
+import useAuthCheck from '../CustomHooks/useAuthCheck';
 
 const ProtectedRoute = ({ children }) => {
   
+    useAuthCheck();    // Check token validity on every protected route
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
 

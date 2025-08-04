@@ -15,6 +15,8 @@ import Report from "./pages/Report";
 import Setting from "./pages/Setting";
 import Profile from "./pages/Profile";
 import Home from "./pages/Home";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 function App() {
@@ -95,6 +97,8 @@ function App() {
 
         </Routes>
       </HashRouter>
+
+      <ToastContainer position="top-center" autoClose={3000} />
     </>
   );
 }
