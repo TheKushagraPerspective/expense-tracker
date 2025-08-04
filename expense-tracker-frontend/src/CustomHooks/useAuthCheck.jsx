@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import jwt_decode from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 import {toast} from 'react-toastify'
 
 
@@ -12,7 +12,7 @@ const useAuthCheck = () => {
         const token = localStorage.getItem("token");
         if(token) {
             try {
-                const decode = jwt_decode(token);
+                const decode = jwtDecode(token);
                 const currentTime = Date.now() / 1000;   // in seconds
 
                 if(decode.exp < currentTime) {
