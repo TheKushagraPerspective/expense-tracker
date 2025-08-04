@@ -5,7 +5,6 @@ require("dotenv").config();
 const authMiddleware = (req , res , next) => {
     // 1. Get the token from the Authorization header
     const authHeader = req.headers.authorization;
-    console.log("Incoming Auth Header:", req.headers.authorization);
 
 
     if(!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -20,10 +19,9 @@ const authMiddleware = (req , res , next) => {
         const decoded = jwt.verify(token , process.env.JWT_SECRET);
         
         req.user = decoded;
-        console.log("User decoded from token:", decoded); // 🧪 Debug log
 
         // 5. Move to the next middleware or controller
-        console.log("Decoded token:", decoded); // Make sure userId is present
+        // console.log("Decoded token:", decoded); // Make sure userId is present
         next();
     } catch (error) {
         return res.status(401).json({ msg: "Token is invalid or expired" });

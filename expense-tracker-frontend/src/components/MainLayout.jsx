@@ -6,7 +6,7 @@ const MainLayout = ({children}) => {
     <>
         <div className="flex flex-col sm:flex-row">
             <Sidebar />
-            <div className='w-full p-6 mt-[300px] sm:mt-0 sm:ml-64 md:ml-68 lg:ml-[275px]'>
+            <div className='w-full p-6  sm:mt-0 sm:ml-64 md:ml-68 lg:ml-[275px]'>
                 {children}
             </div>
         </div>

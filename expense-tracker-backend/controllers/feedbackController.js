@@ -34,7 +34,7 @@ const newFeedback = async(req , res) => {
         console.error("Error saving feedback:", error);
         return res.status(500).json({
             success: false,
-            message: "An error occurred while saving feedback",
+            message: error.message || "An error occurred while saving feedback",
         });
     }
 

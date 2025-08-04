@@ -18,9 +18,11 @@ const Login = () => {
   
   // if token is already there then redirect to dashboard (no need to login again until token is there)
   const token = localStorage.getItem("token");
+
   useEffect(() => {
       if(token) {
           alert("Redirecting to home page in 2 sec...")
+          toast.success(<div><strong>Welcome!</strong> Thanks for logging in.</div>);
           const timer = setTimeout(() => {
              navigate("/home");
           } , 2000);
@@ -31,7 +33,7 @@ const Login = () => {
 
 
 
-  const handleSubmit = async(e) => {
+  const handleOnLogin = async(e) => {
       e.preventDefault();
 
       if(!email.trim() || !password.trim()) {
@@ -52,7 +54,6 @@ const Login = () => {
 
       // now preceed with login
       try {
-        
           const response = await axios.post(`${BASE_URL}/api/user/login` , {
             email , password
           });
@@ -80,8 +81,6 @@ const Login = () => {
   }
 
 
-
-
   
   return (
     <>
@@ -91,64 +90,74 @@ const Login = () => {
     shadow-2xl text-white"
         >
           <h2 className="text-2xl font-semibold text-center mb-6">
-            Expense Tracker
+              Expense Tracker
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4 mx-10">
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
+          <form onSubmit={handleOnLogin} className="space-y-4 mx-10">
+              {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                  {error}
+                </div>
+              )}
 
             <div className="mb-4">
-              <label
-                htmlFor="user_email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Email address
-              </label>
-              <input
-                type="email"
-                id="user_email"
-                placeholder="Enter email"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
+                <label
+                  htmlFor="user_email"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Email address
+                </label>
+                <input
+                  type="email"
+                  id="user_email"
+                  placeholder="Enter email"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                />
             </div>
 
             <div className="mb-4">
-              <label
-                htmlFor="user_password"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Password
-              </label>
-              <input
-                type="password"
-                id="user_password"
-                placeholder="Password"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
+                <label
+                  htmlFor="user_password"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Password
+                </label>
+                <input
+                  type="password"
+                  id="user_password"
+                  placeholder="Password"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
             </div>
+
+            <p className="text-sm text-start mt-4">
+                <span className="text-white">Forgot your password? </span>
+                <Link
+                  to="/reset-password"
+                  className="text-yellow-200 hover:underline hover:text-white transition duration-200 font-medium"
+                >
+                  Click here to reset
+                </Link>
+            </p>
 
             <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
-            >
-              Login
+                type="submit"
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
+              >
+                Login
             </button>
 
             <p className="text-sm text-center mt-4 text-white">
-              Not registered?{" "}
-              <Link
-                to="/register"
-                className="text-blue-200 underline hover:text-white transition duration-200"
-              >
-                Sign up
+                Not registered?{" "}
+                <Link
+                  to="/register"
+                  className="text-blue-200 underline hover:text-white transition duration-200"
+                >
+                  Sign up
               </Link>
             </p>
           </form>

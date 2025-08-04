@@ -19,7 +19,7 @@ const registerUser = async (req , res) => {
             return res.status(400).json({ message: "Password must be at least 6 characters long" });
         }
 
-         // ✅ Mobile number validation (add this)
+         //  Mobile number validation
         if (mobile && !/^\d{10}$/.test(mobile)) {
             return res.status(400).json({ msg: "Invalid mobile number format" });
         }
@@ -34,27 +34,28 @@ const registerUser = async (req , res) => {
         const newUser = new User({name , email , password : hashedPassword , mobile});
         await newUser.save();
 
-        const defaultCategories = [
-        // Income Categories
-        { name: "Salary / Compensation", type: "income", userId: newUser._id },
-        { name: "Business Income", type: "income", userId: newUser._id },
-        { name: "Consulting / Freelance", type: "income", userId: newUser._id },
-        { name: "Investments Returns", type: "income", userId: newUser._id },
-        { name: "Gifts", type: "income", userId: newUser._id },
-        { name: "Other Income", type: "income", userId: newUser._id },
 
-        // Expense Categories
-        { name: "Meals & Dining", type: "expense", userId: newUser._id },
-        { name: "Transportation", type: "expense", userId: newUser._id },
-        { name: "Housing / Rent", type: "expense", userId: newUser._id },
-        { name: "Utilities (Electricity, Water)", type: "expense", userId: newUser._id },  
-        { name: "Groceries & Essentials", type: "expense", userId: newUser._id },
-        { name: "Healthcare & Insurance", type: "expense", userId: newUser._id },      
-        { name: "Entertainment (Subscriptions)", type: "expense", userId: newUser._id },
-        { name: "Shopping", type: "expense", userId: newUser._id },
-        { name: "Education", type: "expense", userId: newUser._id },
-        { name: "EMI / Loans", type: "expense", userId: newUser._id },
-        { name: "Miscellaneous", type: "expense", userId: newUser._id }
+        const defaultCategories = [
+            // Income Categories
+            { name: "Salary / Compensation", type: "income", userId: newUser._id },
+            { name: "Business Income", type: "income", userId: newUser._id },
+            { name: "Consulting / Freelance", type: "income", userId: newUser._id },
+            { name: "Investments Returns", type: "income", userId: newUser._id },
+            { name: "Gifts", type: "income", userId: newUser._id },
+            { name: "Other Income", type: "income", userId: newUser._id },
+
+            // Expense Categories
+            { name: "Meals & Dining", type: "expense", userId: newUser._id },
+            { name: "Transportation", type: "expense", userId: newUser._id },
+            { name: "Housing / Rent", type: "expense", userId: newUser._id },
+            { name: "Utilities (Electricity, Water)", type: "expense", userId: newUser._id },  
+            { name: "Groceries & Essentials", type: "expense", userId: newUser._id },
+            { name: "Healthcare & Insurance", type: "expense", userId: newUser._id },      
+            { name: "Entertainment (Subscriptions)", type: "expense", userId: newUser._id },
+            { name: "Shopping", type: "expense", userId: newUser._id },
+            { name: "Education", type: "expense", userId: newUser._id },
+            { name: "EMI / Loans", type: "expense", userId: newUser._id },
+            { name: "Miscellaneous", type: "expense", userId: newUser._id }
         ];
 
         await Category.insertMany(defaultCategories);
@@ -77,7 +78,6 @@ const loginUser = async(req , res) => {
     
     try {
         const {email , password} = req.body;
-
 
         if(!email || !password) {
             return res.status(400).json({ msg: "All fields are required" });
@@ -122,10 +122,9 @@ const loginUser = async(req , res) => {
 
 
 const getUserDetails = async(req , res) => {
+    const userId = req.user.userId;
 
     try {
-        const userId = req.user.userId;
-
         const user = await User.findOne({_id : userId});
 
         if(!user) {
@@ -178,8 +177,6 @@ const updateUser = async(req , res) => {
             return res.status(401).json({msg : "User not found"})
         }
 
-
-
         return res.status(200).json({
             success : true,
             msg : "Updated Successfully",
@@ -194,6 +191,7 @@ const updateUser = async(req , res) => {
         return res.status(500).json({msg : "Server Error from updateUser"});
     }
 }
+
 
 
 const updateCurrency = async(req , res) => {
@@ -222,6 +220,7 @@ const updateCurrency = async(req , res) => {
     }
 
 }
+
 
 
 const updatePassword = async(req , res) => {
@@ -270,6 +269,7 @@ const updatePassword = async(req , res) => {
         return res.status(500).json({message: "Server Error"});
     }
 }
+
 
 
 const deleteAccount = async(req , res) => {

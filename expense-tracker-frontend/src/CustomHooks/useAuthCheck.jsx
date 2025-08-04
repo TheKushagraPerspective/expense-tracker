@@ -7,8 +7,8 @@ import {toast} from 'react-toastify'
 const useAuthCheck = () => {
     const navigate = useNavigate();
 
-    useEffect(() => {
 
+    useEffect(() => {
         const interval = setInterval(() => {
             const token = localStorage.getItem("token");
 
@@ -21,19 +21,21 @@ const useAuthCheck = () => {
 
 
             try {
-                const decode = jwtDecode(token);
-                const currentTime = Date.now() / 1000;
+                const decode = jwtDecode(token);    // it will decode the token as userId , email , expirytime, etc
+                const currentTime = Date.now() / 1000;   // in seconds
 
                 if(decode.exp < currentTime) {
                     toast.error("Session expired. Redirecting to login...");
                     localStorage.removeItem("token");
-                    navigate('/');
+                    localStorage.removeItem("user");
                     clearInterval(interval);
+                    navigate('/');
                 }
             } catch (error) {
                 console.error("Token decode error:", err);
                 toast.error("Invalid session. Redirecting...");
                 localStorage.removeItem("token");
+                localStorage.removeItem("user");
                 clearInterval(interval);
                 navigate("/");
             }

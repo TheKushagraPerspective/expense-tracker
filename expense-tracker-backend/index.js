@@ -3,6 +3,7 @@ const app = express();
 const cors = require("cors");
 require("dotenv").config();
 
+// all routes files
 const userRoute = require("./routes/userRoute");
 const categoryRoute = require("./routes/categoryRoute");
 const transactionRoute = require("./routes/transactionRoute");
@@ -24,7 +25,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 
-
+// all routes
 app.use("/api/user" , userRoute);
 app.use("/api/category" , categoryRoute);
 app.use("/api/transaction" , transactionRoute);

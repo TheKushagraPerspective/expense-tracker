@@ -1,6 +1,7 @@
 import React, { useState , useEffect } from 'react'
 import axios from "axios"
 import {useNavigate} from 'react-router-dom'
+import { toast } from 'react-toastify';
 
 
 
@@ -9,6 +10,7 @@ const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 
 const Setting = () => {
 
+    // currency section
     const [currency , setCurrency] = useState("INR");
 
     const navigate = useNavigate();
@@ -18,7 +20,7 @@ const Setting = () => {
         newPassword: "",
         confirmPassword: "",
     })
-    
+
     const [wantToGiveFeedback , setWantToGiveFeedback] = useState(false);
     const [feedbackFormData , setFeedbackFormData] = useState({
         fullName: "",
@@ -72,7 +74,7 @@ const Setting = () => {
             );
 
             if(res.data.success) {
-                alert("Currency Changed Successfully");
+                toast.success("Currency Changed Successfully");
             }
 
         } catch (error) {
@@ -81,34 +83,9 @@ const Setting = () => {
     }
 
 
-
-    const handleOnDeleteAccount = async(e) => {
-        const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.")
-        if(!confirmed) {
-            return ;
-        }
-
-        try {
-            const token = localStorage.getItem("token");
-            const res = await axios.delete(`${BASE_URL}/api/user/delete-account` , {
-                headers : {
-                    Authorization : `Bearer ${token}`
-                }
-            })
-
-            alert(res.data.message || "Account Deleted Successfully");
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-            navigate("/");   // redirect to login page
-
-        } catch (err) {
-            alert(err.response.data.message || "Account deletion failed");
-        }
-    }
-
-
-
-    const handleOnInputChange = (e) => {
+    
+    // password change logic here
+    const handleOnPasswordChange = (e) => {
         setFormData((prev) => ({
             ...prev,
             [e.target.name]: e.target.value,
@@ -157,6 +134,35 @@ const Setting = () => {
     }
 
 
+
+    // delete account logic
+    const handleOnDeleteAccount = async(e) => {
+        const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.")
+        if(!confirmed) {
+            return ;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.delete(`${BASE_URL}/api/user/delete-account` , {
+                headers : {
+                    Authorization : `Bearer ${token}`
+                }
+            })
+
+            alert(res.data.message || "Account Deleted Successfully");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate("/");   // redirect to login page
+
+        } catch (err) {
+            alert(err.response.data.message || "Account deletion failed");
+        }
+    }
+
+
+
+    // feedback logic here
     const handleOnFeedbackInput = (e) => {
         setFeedbackFormData((prev) => ({
             ...prev,
@@ -203,12 +209,21 @@ const Setting = () => {
         }
     }
 
+
+
   return (
     <>
+
+        <h1 className='text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text mb-4'>
+            Settings
+        </h1>
+
+
+
         {/* General Preference Section */}
         <div className='mx-auto max-w-5xl mb-10 px-4'>
             <div className="shadow-lg  py-10 rounded-lg px-6">
-                <h1 className='text-xl md:text-2xl font-semibold text-gray-800 tracking-wide'>General Preferences</h1>
+                <h1 className='text-xl md:text-2xl font-semibold text-gray-800 tracking-wide border-b border-gray-200 pb-2 mb-4'>General Preferences</h1>
                 <div className="flex flex-col gap-4 w-full mx-auto mt-6">
                     <div className='flex justify-between items-center'>
                         <label htmlFor="theme">
@@ -240,14 +255,14 @@ const Setting = () => {
         {/* Account Setting Section */}
         <div className='mx-auto max-w-5xl mb-10 px-4'>
             <div className="shadow-lg  py-10 rounded-lg px-6">
-                <h1 className='text-xl md:text-2xl font-semibold text-gray-800 tracking-wide'>Account Settings</h1>
+                <h1 className='text-xl md:text-2xl font-semibold text-gray-800 tracking-wide border-b border-gray-200 pb-2 mb-4e'>Account Settings</h1>
                 <div className="flex flex-col gap-2 w-full mx-auto mt-6">
                     
                     <div className='flex justify-between items-center mb-4'>
 
-                        <h1 className='text-blue-800 text-lg mt-2'>Change Password</h1>
+                        <h1 className='text-blue-800 sm:text-lg text-md mt-3'>Change Password</h1>
                         <button
-                            className='bg-blue-600 text-white px-4 py-1.5 rounded-lg shadow-lg hover:bg-blue-700 transition duration-200'
+                            className='bg-gradient-to-r from-blue-500 to-indigo-600 text-white sm:px-4 sm:py-2 px-2 py-2 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300'
                             onClick={() => setWantToChangePass(prev => !prev)}
                         >
                             {wantToChangePass ? "Cancel" : "Change Password"}
@@ -265,7 +280,7 @@ const Setting = () => {
                                 className='border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
                                 placeholder="Enter your old password"
                                 value={formData.oldPassword}
-                                onChange={(e) => handleOnInputChange(e)}
+                                onChange={(e) => handleOnPasswordChange(e)}
                             />
                         </div>
 
@@ -278,7 +293,7 @@ const Setting = () => {
                                 className='border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
                                 placeholder="Enter new password"
                                 value={formData.newPassword}
-                                onChange={(e) => handleOnInputChange(e)}
+                                onChange={(e) => handleOnPasswordChange(e)}
                             />
                         </div>
 
@@ -291,7 +306,7 @@ const Setting = () => {
                                 className='border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
                                 placeholder="Confirm new password"
                                 value={formData.confirmPassword}
-                                onChange={(e) => handleOnInputChange(e)}
+                                onChange={(e) => handleOnPasswordChange(e)}
                             />
                         </div>
 
@@ -307,9 +322,9 @@ const Setting = () => {
 
                     <div className='flex justify-between items-center '>
 
-                        <h1 className='text-red-800 text-lg mb-2'>Change Password</h1>
+                        <h1 className='text-red-800 sm:text-lg text-md mb-3'>Delete Account</h1>
                         <button
-                            className='bg-red-600 text-white px-6 py-1.5 rounded-lg shadow-lg hover:bg-red-700 transition duration-200'
+                            className='bg-gradient-to-r from-red-500 to-pink-600 text-white sm:px-6 sm:py-2 px-4 py-2 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300'
                             onClick={handleOnDeleteAccount}
                         >
                             Delete Account
@@ -325,14 +340,14 @@ const Setting = () => {
         {/* Feedback and Support Section */}
         <div className='mx-auto max-w-5xl  mb-10 px-4'>
             <div className="shadow-lg  py-10 rounded-lg px-6">
-                <h1 className='text-xl md:text-2xl font-semibold text-gray-800 tracking-wide'>Feedback & Support</h1>
+                <h1 className='text-xl md:text-2xl font-semibold text-gray-800 tracking-wide border-b border-gray-200 pb-2 mb-4'>Feedback & Support</h1>
                 <div className="flex flex-col gap-2 w-full mx-auto mt-6">
                     
                     <div className='flex justify-between items-center mb-4'>
 
                         <h1 className='text-gray-800 text-lg mt-2'>Feedback</h1>
                         <button
-                            className='bg-blue-600 text-white px-4 py-1.5 rounded-lg shadow-lg hover:bg-blue-700 transition duration-200'
+                            className='bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300'
                             onClick={() => setWantToGiveFeedback(prev => !prev)}
                         >
                             {wantToGiveFeedback ? "Cancel" : "Show"}
@@ -408,7 +423,7 @@ const Setting = () => {
                                         name='rating'
                                         value={value}
                                         checked={feedbackFormData.rating === value.toString()}
-                                        className='accent-blue-600'
+                                        className='accent-blue-600 scale-125 cursor-pointer'
                                         onChange={handleOnFeedbackInput} />
                                     </label>
                                 ))}

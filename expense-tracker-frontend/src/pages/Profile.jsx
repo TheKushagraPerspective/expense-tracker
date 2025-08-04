@@ -2,6 +2,7 @@ import React , {useState , useEffect} from 'react'
 import ProfileImage from "../assets/profile-image.png"
 import { Pencil, Save } from "lucide-react"; 
 import axios from "axios";
+import { toast } from 'react-toastify';
 
 
 const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
@@ -11,7 +12,6 @@ const Profile = () => {
 
   const [token , setToken] = useState("");
   const [user , setUser] = useState(null);
-  // const [userId , setuserId] = useState("");
   const [isEditing , setIsEditing] = useState({
     name : false,
     mobile : false,
@@ -30,9 +30,7 @@ const Profile = () => {
       if(token && userFromStorage) {
           try {
             
-            // const payload = JSON.parse(atob(token.split(".")[1]));  // This sets only what's inside the token
             const userData = JSON.parse(userFromStorage);
-            // setuserId(payload.userId);
             setUser(userData);
             setToken(token);
             
@@ -76,12 +74,12 @@ const Profile = () => {
             setUser((prev) => ({...prev , [field]: formData[field]}));
             setIsEditing((prev) => ({...prev , [field] : false}));  
             
-            alert(`Successfully updated the '${field}' field`);
+            toast.success(`Successfully updated the '${field}' field`);
         }
 
       } catch (error) {
         console.error("Error updating name:", error);
-        alert("Failed to update name. Please try again.");
+        toast.warning("Failed to update name. Please try again.");
       }
   }
 
@@ -89,6 +87,10 @@ const Profile = () => {
   return (
     <>
       
+      <h1 className='text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text mb-4'>
+            Profile
+        </h1>
+
       <div className="flex justify-center items-center py-16 px-4">
           <div className='w-full max-w-md bg-white rounded-xl py-8 md:py-14 text-center shadow-xl bg-gradient-to-br from-green-100 via-teal-100 to-blue-100'>
 

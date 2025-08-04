@@ -12,7 +12,7 @@ const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 
 const Dashboard = () => {
 
-  const {lastdateOfMonth , month: currentMonth , year: currentYear} = useCurrentDate();
+  const {lastdateOfMonth , month: currentMonth , year: currentYear} = useCurrentDate();    // fetch ussin custom hook
   const [userId , setUserId] = useState("");
   const [monthlytransactions , setMonthlyTransactions] = useState([]);
   const [yearlyTransactions , setYearlyTransactions] = useState([]);
@@ -22,8 +22,7 @@ const Dashboard = () => {
 
 
 
-
-
+  // it is used to fetch user data and we are extracting currency from it
   useEffect(() => {
       const fetchProfile = async() => {
         const token = localStorage.getItem("token");
@@ -50,6 +49,7 @@ const Dashboard = () => {
   } , [])
 
 
+  // it is used to fetch transaction monthlywise and yearlywise
   useEffect(() => {
     if(userId) {
         fetchMonthlyTransactions();
@@ -58,6 +58,8 @@ const Dashboard = () => {
   } , [userId, currentMonth, currentYear, lastdateOfMonth]);
 
   
+
+  // used to fetch income, expense, and balance
   useEffect(() => {
     if (monthlytransactions.length > 0) {
       calculateSummary(monthlytransactions);
@@ -68,6 +70,8 @@ const Dashboard = () => {
   }, [monthlytransactions]);
 
 
+
+  // fetch current month transaction
   const fetchMonthlyTransactions = async() => {
       const params = new URLSearchParams;
 
@@ -116,6 +120,7 @@ const Dashboard = () => {
 
 
 
+  // fetch current year transaction
   const fetchYearlyTransactions = async() => {
       const params = new URLSearchParams;
 

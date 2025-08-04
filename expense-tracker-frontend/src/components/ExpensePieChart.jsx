@@ -72,13 +72,30 @@ const ExpensePieChart = ({ filteredMonthlyTransactions , currency }) => {
   };
 
 
+  const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+              boxWidth: 15,
+          },
+        },
+      },
+  };
+
+
+
   return (
     <div className="bg-white p-5 rounded-xl shadow-md h-full flex flex-col justify-center items-center aspect-[4/3]">
       <h2 className="text-center text-xl font-bold text-gray-700 mb-4">
         Expenses by Category ({currentMonth}, {currentYear})
       </h2>
       {labels.length > 0 ? (
-        <Pie data={data} />
+        <div className="flex-1 relative">
+        <Pie data={data} options={options} />
+      </div>
       ) : (
         <p className="text-center text-gray-500">No expense data available</p>
       )}

@@ -1,5 +1,6 @@
 import React , {useState , useEffect , useContext} from 'react'
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 
 const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
@@ -21,7 +22,7 @@ const CategoryList = ({userId}) => {
 
         const {name , type} = formData;
         if(!name || !type) {
-            alert("All Fields are required");
+            toast.error("All Fields are required");
             return;
         }
 
@@ -37,6 +38,7 @@ const CategoryList = ({userId}) => {
             });
 
             console.log(response.data);
+            toast.success("Successfully added the category")
             setFormData({name: "" , type: "income"});
             setShowForm(false);
             await fetchCategories();
@@ -54,7 +56,6 @@ const CategoryList = ({userId}) => {
     }
 
 
-
     const handleOnRemove = async(idToRemove) => {
         try {
             await axios.delete(`${BASE_URL}/api/category/${idToRemove}`,
@@ -64,6 +65,8 @@ const CategoryList = ({userId}) => {
             }
           }
         );
+
+            toast.success("Successfully removed the category")
             fetchCategories();
         } catch (error) {
             console.log("Error in deleting the category" , error);
@@ -109,7 +112,7 @@ const CategoryList = ({userId}) => {
                         <button
                         type="button"
                         onClick={() => setShowForm(true)}
-                        className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
+                        className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300"
                         >
                             +Category
                         </button>
@@ -138,7 +141,7 @@ const CategoryList = ({userId}) => {
 
                         <button 
                         type="submit" 
-                        className="bg-green-600 text-white px-10 py-2 rounded-md hover:bg-green-700 transition" 
+                        className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300" 
                         >
                             Save Category
                         </button>
@@ -161,10 +164,10 @@ const CategoryList = ({userId}) => {
                         <tbody>
                             {incomeCategories.map((cat) => (
                                 <tr key={cat._id} className="hover:bg-green-50">
-                                    <td className='p-3 border pl-5'>{cat.name}</td>
-                                    <td className='p-3 border pl-5 capitalize'>{cat.type}</td>
+                                    <td className='p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
+                                    <td className='p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
                                     <td className='p-3 border pl-5'>
-                                        <button className="bg-rose-500 text-white px-3 py-1 rounded-md hover:bg-rose-600 transition cursor-pointer"
+                                        <button className="bg-gradient-to-r from-red-500 to-rose-600 text-white sm:px-4 sm:py-2 px-1.5 py-1.5 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300 cursor-pointer"
                                         onClick={() => handleOnRemove(cat._id)}>
                                             Remove
                                         </button>
@@ -189,10 +192,10 @@ const CategoryList = ({userId}) => {
                         <tbody>
                             {expenseCategories.map((cat) => (
                                 <tr key={cat._id} className="hover:bg-red-50">
-                                    <td className='p-3 border pl-5'>{cat.name}</td>
-                                    <td className='p-3 border pl-5 capitalize'>{cat.type}</td>
+                                    <td className='p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
+                                    <td className='p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
                                     <td className='p-3 border pl-5'>
-                                        <button className="bg-rose-500 text-white px-3 py-1 rounded-md hover:bg-rose-600 transition cursor-pointer"
+                                        <button className="bg-gradient-to-r from-red-500 to-rose-600 text-white sm:px-4 sm:py-2 px-1.5 py-1.5 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300 cursor-pointer"
                                         onClick={() => handleOnRemove(cat._id)}>
                                             Remove
                                         </button>

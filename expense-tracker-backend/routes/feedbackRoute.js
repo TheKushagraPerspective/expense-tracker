@@ -4,6 +4,7 @@ const {newFeedback} = require("../controllers/feedbackController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 
+// POST /api/feedback
 router.post("/" , authMiddleware , newFeedback);
 
 

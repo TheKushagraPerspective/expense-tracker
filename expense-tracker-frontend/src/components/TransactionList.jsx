@@ -1,5 +1,6 @@
 import React , {useState , useEffect} from 'react'
 import axios from "axios";
+import { toast } from 'react-toastify';
 
 
 const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
@@ -89,14 +90,14 @@ const TransactionList = ({userId}) => {
 
         const {amount , note , date , categoryId} = formData;
         if(!amount || !note || !date || !categoryId) {
-            alert("All Fields are required");
+            toast.error("All Fields are required");
             return;
         }
 
         // ✅ Find the category from the list to get its type
         const selectedCategory = categoryList.find(cat => cat._id === categoryId);
         if (!selectedCategory) {
-            alert("Invalid category selected");
+            toast.error("Invalid category selected");
             return;
         }
 
@@ -117,6 +118,7 @@ const TransactionList = ({userId}) => {
               }
             });
             
+            toast.success("Successfully added the transaction")
             setFormData({ amount: "", categoryId: "", note: "", date: "" });
             fetchTransactions();
 
@@ -144,6 +146,8 @@ const TransactionList = ({userId}) => {
             }
           }
         );
+
+            toast.success("Successfully removed the transaction")
             await fetchTransactions();
         } catch (error) {
             console.log("Error in deleting the transaction" , error);
@@ -155,72 +159,71 @@ const TransactionList = ({userId}) => {
     <>
         <div className="flex flex-col justify-center my-5 gap-10">
 
-            <form onSubmit={handleOnSubmit} className='flex flex-col sm:flex-wrap md:flex-row gap-3 items-center bg-white shadow-md p-4 rounded-lg mx-5 overflow-x-auto'>
-                {!showForm && (
-                    <>
+            {/* Wrapper for consistent width */}
+            <div className="w-full max-w-[1100px] mx-auto space-y-4">
+                {/* Transaction Form */}
+                <form onSubmit={handleOnSubmit} className='flex flex-col sm:flex-wrap md:flex-row gap-3 items-center bg-white shadow-md p-4 rounded-lg overflow-x-auto'>
+                    {!showForm && (
                         <button
-                        type="button"
-                        onClick={() => setShowForm(true)}
-                        className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition"
+                            type="button"
+                            onClick={() => setShowForm(true)}
+                            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300"
                         >
                             +Transaction
                         </button>
-                    </>
-                )}
+                    )}
 
-                {showForm && (
-                    <>
-                        <input 
-                        type="number"
-                        placeholder='Amount...'
-                        value={formData.amount}
-                        onChange={(e) => setFormData({...formData , amount : e.target.value})} 
-                        className="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        />
+                    {showForm && (
+                        <>
+                            <input 
+                                type="number"
+                                placeholder='Amount...'
+                                value={formData.amount}
+                                onChange={(e) => setFormData({...formData , amount : e.target.value})} 
+                                className="flex-1 sm:min-w-[200px] min-w-[250px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            />
 
-                        <select 
-                        value={formData.categoryId}
-                        onChange={(e) => setFormData({...formData , categoryId : e.target.value})}
-                        className="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        >
-                            <option value="">Select category</option>
-                            {categoryList.map((cat) => (
-                                <option value={cat._id} key={cat._id}>
-                                    {cat.name} ({cat.type})
-                                </option>
-                            ))}
-                        </select>
+                            <select 
+                                value={formData.categoryId}
+                                onChange={(e) => setFormData({...formData , categoryId : e.target.value})}
+                                className="flex-1 sm:min-w-[200px] max-w-[250px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            >
+                                <option value="">Select category</option>
+                                {categoryList.map((cat) => (
+                                    <option value={cat._id} key={cat._id}>
+                                        {cat.name} ({cat.type})
+                                    </option>
+                                ))}
+                            </select>
 
-                        <input
-                        type="text"
-                        placeholder="Desc..."
-                        value={formData.note}
-                        onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                        className="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        />
+                            <input
+                                type="text"
+                                placeholder="Desc..."
+                                value={formData.note}
+                                onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                                className="flex-1 sm:min-w-[200px] min-w-[250px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            />
 
-                        <input
-                        type="date"
-                        value={formData.date}
-                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                        className="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        required
-                        />
+                            <input
+                                type="date"
+                                value={formData.date}
+                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                className="flex-1 sm:min-w-[200px] min-w-[250px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                required
+                            />
 
-                        <button 
-                        type="submit" 
-                        className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition cursor-pointer" 
-                        >
-                            Save Transaction
-                        </button>
+                            <button 
+                                type="submit" 
+                                className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300" 
+                            >
+                                Save Transaction
+                            </button>
                         </>
                     )}
-            </form>
+                </form>
 
-
-            {/* this div will have sorting algo like sort the transactions based on date/amount/category, and type like income/expense and a search bar to search by category */}
-            <div className='w-full '>
-                <form onSubmit={handleFilter} className='w-full flex flex-col sm:flex-wrap md:flex-row gap-5 items-center bg-white shadow-md p-4 rounded-lg mx-5 overflow-x-auto'>
+                {/* Filter Form */}
+                <form onSubmit={handleFilter} className='flex flex-col sm:flex-wrap md:flex-row gap-5 items-center bg-white shadow-md p-4 rounded-lg overflow-x-auto'>
                     <input 
                         type="date" 
                         value={filters.startDate} 
@@ -229,7 +232,7 @@ const TransactionList = ({userId}) => {
                     />
 
                     <input 
-                    type="date" 
+                        type="date" 
                         value={filters.endDate} 
                         onChange={(e) => setFilters({...filters, endDate: e.target.value})} 
                         className="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -239,9 +242,9 @@ const TransactionList = ({userId}) => {
                         onChange={(e) => setFilters({...filters , type : e.target.value})} 
                         className="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                     >
-                            <option value="">All</option>
-                            <option value="income">Income</option>
-                            <option value="expense">Expense</option>
+                        <option value="">All</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
                     </select>
 
                     <input
@@ -253,12 +256,13 @@ const TransactionList = ({userId}) => {
 
                     <button
                         type="submit"
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition min-w-[150px]"
+                        className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300"
                     >
                         Apply Filters
                     </button>
                 </form>
             </div>
+
 
 
             <div className="space-y-10">
