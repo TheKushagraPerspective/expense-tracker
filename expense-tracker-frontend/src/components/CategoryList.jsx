@@ -10,6 +10,7 @@ const CategoryList = ({userId}) => {
 
     const [incomeCategories , setIncomeCategories] = useState([]);
     const [expenseCategories , setExpenseCategories] = useState([]);
+    const [offeringCategory , setOfferingCategory] = useState([]);
     const [showForm , setShowForm] = useState(false);
     const [formData , setFormData] = useState({
         name: "",
@@ -89,6 +90,7 @@ const CategoryList = ({userId}) => {
 
             setIncomeCategories(allCategories.filter(cat => cat.type === "income"));
             setExpenseCategories(allCategories.filter(cat => cat.type === "expense"));
+            setOfferingCategory(allCategories.filter(cat => cat.type === "contribution"));
         } catch (error) {
             console.error("Error fetching categories:", error);
         }
@@ -137,6 +139,7 @@ const CategoryList = ({userId}) => {
                         >
                             <option value="income">Income</option>
                             <option value="expense">Expense</option>
+                            <option value="contribution">Contribution</option>
                         </select>
 
                         <button 
@@ -162,18 +165,25 @@ const CategoryList = ({userId}) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {incomeCategories.map((cat) => (
-                                <tr key={cat._id} className="hover:bg-green-50">
-                                    <td className='p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
-                                    <td className='p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
-                                    <td className='p-3 border pl-5'>
-                                        <button className="bg-gradient-to-r from-red-500 to-rose-600 text-white sm:px-4 sm:py-2 px-1.5 py-1.5 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300 cursor-pointer"
-                                        onClick={() => handleOnRemove(cat._id)}>
-                                            Remove
-                                        </button>
+                            {incomeCategories.length > 0 ? (incomeCategories.map((cat) => (
+                                    <tr key={cat._id} className="hover:bg-green-50">
+                                        <td className='p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
+                                        <td className='p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
+                                        <td className='p-3 border pl-5'>
+                                            <button className="bg-gradient-to-r from-red-500 to-rose-600 text-white sm:px-4 sm:py-2 px-1.5 py-1.5 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300 cursor-pointer"
+                                            onClick={() => handleOnRemove(cat._id)}>
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="3" className="p-4 text-center text-gray-500">
+                                        No categories found
                                     </td>
-                                </tr>
-                            ))}
+                                </tr> 
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -190,18 +200,61 @@ const CategoryList = ({userId}) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {expenseCategories.map((cat) => (
-                                <tr key={cat._id} className="hover:bg-red-50">
-                                    <td className='p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
-                                    <td className='p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
-                                    <td className='p-3 border pl-5'>
-                                        <button className="bg-gradient-to-r from-red-500 to-rose-600 text-white sm:px-4 sm:py-2 px-1.5 py-1.5 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300 cursor-pointer"
-                                        onClick={() => handleOnRemove(cat._id)}>
-                                            Remove
-                                        </button>
+                            {expenseCategories.length > 0 ? (expenseCategories.map((cat) => (
+                                    <tr key={cat._id} className="hover:bg-red-50">
+                                        <td className='p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
+                                        <td className='p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
+                                        <td className='p-3 border pl-5'>
+                                            <button className="bg-gradient-to-r from-red-500 to-rose-600 text-white sm:px-4 sm:py-2 px-1.5 py-1.5 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300 cursor-pointer"
+                                            onClick={() => handleOnRemove(cat._id)}>
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )) 
+                            ) : (
+                               <tr>
+                                    <td colSpan="3" className="p-4 text-center text-gray-500">
+                                        No categories found
+                                    </td>
+                                </tr> 
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <div className='mx-5'>
+                    {/* Contribution categories */}
+                    <h1 className='font-semibold mb-4 text-xl text-green-700'>Contribution Categories</h1>
+                    <table className='w-full table-fixed border border-collapse bg-white shadow-sm rounded-md'>
+                        <thead className="bg-green-200 text-center">
+                            <tr>
+                                <th className='p-3 border'>Name</th>
+                                <th className='p-3 border'>Type</th>
+                                <th className='p-3 border'>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {offeringCategory.length > 0 ? (offeringCategory.map((cat) => (
+                                    <tr key={cat._id} className="hover:bg-green-50">
+                                        <td className='p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
+                                        <td className='p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
+                                        <td className='p-3 border pl-5'>
+                                            <button className="bg-gradient-to-r from-red-500 to-rose-600 text-white sm:px-4 sm:py-2 px-1.5 py-1.5 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300 cursor-pointer"
+                                            onClick={() => handleOnRemove(cat._id)}>
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )) 
+                            ): (
+                                 <tr>
+                                    <td colSpan="3" className="p-4 text-center text-gray-500">
+                                        No categories found
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>

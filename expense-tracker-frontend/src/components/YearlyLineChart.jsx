@@ -38,21 +38,24 @@ const YearlyLineChart = ({ filteredYearlyTransactions , currency }) => {
   let {lastdateOfMonth , month: currentMonth , year: currentYear} = useCurrentDate();  // currentMonth is having 1-12, 1- jan, ..., 12-dec
 
 
+  const monthlyContribution = Array(12).fill(0);
   const monthlyExpense = Array(12).fill(0);
   const monthlyIncome = Array(12).fill(0);
 
   filteredYearlyTransactions.forEach((txn) => {
     const date = new Date(txn.date);
+    const rate = conversionRate[currency];
+    const amountInSelectedCurrency = txn.amount / rate;
     const month = date.getMonth(); // 0 = Jan, 11 = Dec
 
     if (txn.categoryType === "expense") {
-      const rate = conversionRate[currency];
-      const amountInSelectedCurrency = txn.amount / rate;
       monthlyExpense[month] += amountInSelectedCurrency;
-    } else if (txn.categoryType === "income") {
-      const rate = conversionRate[currency];
-      const amountInSelectedCurrency = txn.amount / rate;
+    } 
+    else if (txn.categoryType === "income") {
       monthlyIncome[month] += amountInSelectedCurrency;
+    } 
+    else {
+      monthlyContribution[month] += amountInSelectedCurrency;
     }
   });
 
@@ -63,6 +66,14 @@ const YearlyLineChart = ({ filteredYearlyTransactions , currency }) => {
     ],
     datasets: [
       {
+        label: `Income ${currencySymbols[currency]}`,
+        data: monthlyIncome,
+        borderColor: "#34d399",
+        backgroundColor: "#6ee7b7",
+        tension: 0.3,
+        fill: false,
+      },
+      {
         label: `Expense ${currencySymbols[currency]}`,
         data: monthlyExpense,
         borderColor: "#f87171",
@@ -71,10 +82,10 @@ const YearlyLineChart = ({ filteredYearlyTransactions , currency }) => {
         fill: false,
       },
       {
-        label: `Income ${currencySymbols[currency]}`,
-        data: monthlyIncome,
-        borderColor: "#34d399",
-        backgroundColor: "#6ee7b7",
+        label: `Contribution ${currencySymbols[currency]}`,
+        data: monthlyContribution,
+        borderColor: "#60a5fa",
+        backgroundColor: "#60a5fa",
         tension: 0.3,
         fill: false,
       }

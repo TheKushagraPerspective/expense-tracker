@@ -120,6 +120,7 @@ const TransactionList = ({userId}) => {
             
             toast.success("Successfully added the transaction")
             setFormData({ amount: "", categoryId: "", note: "", date: "" });
+            setShowForm(false);
             fetchTransactions();
 
         } catch (error) {
@@ -245,6 +246,7 @@ const TransactionList = ({userId}) => {
                         <option value="">All</option>
                         <option value="income">Income</option>
                         <option value="expense">Expense</option>
+                        <option value="contribution">Contribution</option>
                     </select>
 
                     <input
@@ -308,7 +310,7 @@ const TransactionList = ({userId}) => {
                 </button>
 
                 <span className="px-2 py-1 bg-gray-200 rounded">
-                        Page {page} of {totalPage}
+                        Page {page} of {totalPage === 0 ? 1 : totalPage}
                 </span>
                 <button
                     disabled = {page === totalPage}

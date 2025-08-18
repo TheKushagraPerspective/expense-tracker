@@ -37,28 +37,54 @@ const MonthlyBarChart = ({ filteredMonthlyTransactions , currency }) => {
 
 
   // Group expenses by date
-  const dailyTotals = {};
+  const dailyTotalExpense = {};
+  const dailyTotalContribution = {};
+  const dailyTotalIncome = {};
 
   filteredMonthlyTransactions.forEach((txn) => {
     const date = new Date(txn.date).getDate(); // Get day of month (1-31)
-    if (txn.categoryType === "expense") {
-      const rate = conversionRate[currency];
-      const amountInSelectedCurrency = txn.amount / rate;
-      dailyTotals[date] = (dailyTotals[date] || 0) + amountInSelectedCurrency;
+    const rate = conversionRate[currency];
+    const amountInSelectedCurrency = txn.amount / rate;
+
+    if (txn.categoryType === "expense") {  
+      dailyTotalExpense[date] = (dailyTotalExpense[date] || 0) + amountInSelectedCurrency;
+    }
+    else if(txn.categoryType === "contribution") {
+      dailyTotalContribution[date] = (dailyTotalContribution[date] || 0) + amountInSelectedCurrency;
+    }
+    else {
+      dailyTotalIncome[date] = (dailyTotalIncome[date] || 0) + amountInSelectedCurrency;
     }
   });
 
-  // Create array for full month
+
+   // Labels for each day of the month
   const labels = Array.from({ length: 31 }, (_, i) => i + 1); // Days 1–31
-  const data = labels.map((day) => dailyTotals[day] || 0); // If no data, default to 0
+
+  // Map both expense & contribution
+  const incomeData = labels.map((day) => dailyTotalIncome[day] || 0);
+  const expenseData  = labels.map((day) => dailyTotalExpense[day] || 0); // If no data, default to 0
+  const contributionData = labels.map((day) => dailyTotalContribution[day] || 0);
 
   const chartData = {
     labels: labels.map((d) => `Day ${d}`),
     datasets: [
       {
-        label: `Daily Expenses ${currencySymbols[currency]}`,
-        data,
+        label: `Income ${currencySymbols[currency]}`,
+        data: incomeData,
+        backgroundColor: "#4ade80", // red-400
+        borderRadius: 6,
+      },
+      {
+        label: `Expenses ${currencySymbols[currency]}`,
+        data: expenseData,
         backgroundColor: "#f87171", // red-400
+        borderRadius: 6,
+      },
+      {
+        label: `Contributions ${currencySymbols[currency]}`,
+        data: contributionData,
+        backgroundColor: "#60a5fa", // blue-400
         borderRadius: 6,
       },
     ],
@@ -84,7 +110,7 @@ const MonthlyBarChart = ({ filteredMonthlyTransactions , currency }) => {
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-md h-full flex flex-col justify-between aspect-[4/3]">
-      <h2 className="text-center text-xl font-bold text-gray-700">Daily Expense Trend ({currentMonth}, {currentYear})</h2>
+      <h2 className="text-center text-xl font-bold text-gray-700">Daily Income/Expense Trend ({currentMonth}, {currentYear})</h2>
       <Bar data={chartData} options={options} />
     </div>
   );
