@@ -41,7 +41,7 @@ const ExpensePieChart = ({ filteredMonthlyTransactions , currency }) => {
   const categoryWiseExpenses = {};
 
   filteredMonthlyTransactions.forEach((txn) => {
-    if (txn.categoryType === "expense") {
+    if (txn.categoryType === "expense" || txn.categoryType === "contribution") {
       const catName = txn.categoryId.name;
       const rate = conversionRate[currency];
       const amountInSelectedCurrency = (txn.amount / rate);
