@@ -59,37 +59,49 @@ const YearlyLineChart = ({ filteredYearlyTransactions , currency }) => {
     }
   });
 
+
+    // Build datasets dynamically, only include if there’s non-zero data
+  const datasets = [];
+
+  if(monthlyIncome.some((val) => val > 0)) {
+    datasets.push({
+      label: `Income ${currencySymbols[currency]}`,
+      data: monthlyIncome,
+      borderColor: "#34d399",
+      backgroundColor: "#6ee7b7",
+      tension: 0.3,
+      fill: false,
+    })
+  }
+
+  if(monthlyExpense.some((val) => val > 0)) {
+    datasets.push({
+      label: `Expense ${currencySymbols[currency]}`,
+      data: monthlyExpense,
+      borderColor: "#f87171",
+      backgroundColor: "#fca5a5",
+      tension: 0.3,
+      fill: false,
+    })
+  }
+
+  if(monthlyContribution.some((val) => val > 0)) {
+    datasets.push({
+      label: `Contribution ${currencySymbols[currency]}`,
+      data: monthlyContribution,
+      borderColor: "#60a5fa",
+      backgroundColor: "#60a5fa",
+      tension: 0.3,
+      fill: false,
+    })
+  }
+
   const chartData = {
     labels: [
       "Jan", "Feb", "Mar", "Apr", "May", "Jun",
       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     ],
-    datasets: [
-      {
-        label: `Income ${currencySymbols[currency]}`,
-        data: monthlyIncome,
-        borderColor: "#34d399",
-        backgroundColor: "#6ee7b7",
-        tension: 0.3,
-        fill: false,
-      },
-      {
-        label: `Expense ${currencySymbols[currency]}`,
-        data: monthlyExpense,
-        borderColor: "#f87171",
-        backgroundColor: "#fca5a5",
-        tension: 0.3,
-        fill: false,
-      },
-      {
-        label: `Contribution ${currencySymbols[currency]}`,
-        data: monthlyContribution,
-        borderColor: "#60a5fa",
-        backgroundColor: "#60a5fa",
-        tension: 0.3,
-        fill: false,
-      }
-    ],
+    datasets
   };
 
   const options = {
