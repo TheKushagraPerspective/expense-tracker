@@ -17,11 +17,21 @@ connectionDB();
 
 // Middleware
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://expense-tracker-frontend-71kl.onrender.com"], // your frontend port
+  origin: [
+    "http://localhost:5173",
+    "https://expense-tracker-frontend-71kl.onrender.com"
+  ],
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"], // allow token header
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
+
 app.use(cors(corsOptions));
+
+
+// explicitly handle preflight
+app.options("*", cors(corsOptions));
+
 app.use(express.json());
 
 
