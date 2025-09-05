@@ -26,7 +26,7 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ msg: "Invalid mobile number format" });
         }
 
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
 
         if (existingUser) {
             return res.status(401).json({ message: "Email already in use" });
@@ -85,7 +85,7 @@ const getOTP = async (req, res) => {
             return res.status(400).json({ msg: "All fields are required" });
         }
 
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
 
 
         if (!existingUser) {
@@ -124,8 +124,9 @@ const getOTP = async (req, res) => {
         }
 
 
-        // Store the otp in Redis with 5 minutes expiry
-        await client.set(`otp:${email}`, otpSixDigit, { ex: 300 });
+        // Store OTP with 5 minutes expiry
+        await client.set(`otp:${email}`, otpSixDigit);
+        await client.expire(`otp:${email}`, 300); // 300 sec = 5 min
 
 
         return res.status(200).json({
@@ -149,7 +150,7 @@ const verifyOTP = async (req, res) => {
         }
 
         // Check user
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
         if (!existingUser) {
             return res.status(401).json({ msg: "User not found" });
         }
