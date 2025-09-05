@@ -112,7 +112,7 @@ const getOTP = async (req, res) => {
             from: process.env.Email_User,
             to: email,
             subject: "Your OTP Code",
-            text: `Your OTP is ${otp}. It expires in 5 minutes.`,
+            text: `Your OTP is ${otpSixDigit}. It expires in 5 minutes.`,
         }
 
         try {
@@ -125,7 +125,7 @@ const getOTP = async (req, res) => {
 
 
         // Store the otp in Redis with 5 minutes expiry
-        await client.setEx(email , 300 , otpSixDigit);
+        await client.setEx(`otp:${email}` , 300 , otpSixDigit);
 
 
         return res.status(200).json({
@@ -155,18 +155,18 @@ const verifyOTP = async (req, res) => {
         }
 
         
-        const storedOtp = await client.get(email);
+        const storedOtp = await client.get(`otp:${email}`);
 
         if (!storedOtp) {
             return res.status(400).json({ msg: "OTP expired or not found" });
         }
 
-        if (storedOtp !== otp) {
+        if (storedOtp !== enteredOtp) {
             return res.status(400).json({ msg: "Invalid OTP" });
         }
 
         // OTP correct → delete it from Redis (so can’t reuse)
-        await client.del(email);
+        await client.del(`otp:${email}`);
 
         // Generate main login token
         const token = jwt.sign(

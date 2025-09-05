@@ -28,7 +28,6 @@ const Modals = ({ onClose , email , otpToken }) => {
       const response = await axios.post(`${BASE_URL}/api/user/verify-otp` , {
           email: email,   // <-- comes from props
           enteredOtp: enteredOtp,     // <-- user entered
-          otpToken: otpToken,    // <-- token that generated at the time of get token
       })
 
       if(response.data.success) {
