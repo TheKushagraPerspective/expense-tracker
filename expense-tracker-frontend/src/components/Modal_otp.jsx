@@ -8,7 +8,7 @@ import axios from "axios";
 const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 
 
-const Modals = ({ onClose , email }) => {
+const Modals = ({ onClose , email , otpToken }) => {
 
   const navigate = useNavigate();
   const [enteredOtp , setEnteredOtp] = useState("");
@@ -27,7 +27,8 @@ const Modals = ({ onClose , email }) => {
     try {
       const response = await axios.post(`${BASE_URL}/api/user/verify-otp` , {
           email: email,   // <-- comes from props
-          otp: enteredOtp,     // <-- user entered
+          enteredOtp: enteredOtp,     // <-- user entered
+          otpToken: otpToken,    // <-- token that generated at the time of get token
       })
 
       if(response.data.success) {

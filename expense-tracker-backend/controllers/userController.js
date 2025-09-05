@@ -7,12 +7,12 @@ const nodemailer = require("nodemailer");
 
 
 
-const registerUser = async (req , res) => {
-    
-    try {
-        const {name , email , password , mobile} = req.body;
+const registerUser = async (req, res) => {
 
-        if(!name || !email || !password || !mobile) {
+    try {
+        const { name, email, password, mobile } = req.body;
+
+        if (!name || !email || !password || !mobile) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -20,19 +20,19 @@ const registerUser = async (req , res) => {
             return res.status(400).json({ message: "Password must be at least 6 characters long" });
         }
 
-         //  Mobile number validation
+        //  Mobile number validation
         if (mobile && !/^\d{10}$/.test(mobile)) {
             return res.status(400).json({ msg: "Invalid mobile number format" });
         }
 
-        const existingUser = await User.findOne({email});
+        const existingUser = await User.findOne({ email });
 
-        if(existingUser) {
+        if (existingUser) {
             return res.status(401).json({ message: "Email already in use" });
         }
 
-        const hashedPassword = await bcrypt.hash(password , 10);
-        const newUser = new User({name , email , password : hashedPassword , mobile});
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ name, email, password: hashedPassword, mobile });
         await newUser.save();
 
 
@@ -49,9 +49,9 @@ const registerUser = async (req , res) => {
             { name: "Meals & Dining", type: "expense", userId: newUser._id },
             { name: "Transportation", type: "expense", userId: newUser._id },
             { name: "Housing / Rent", type: "expense", userId: newUser._id },
-            { name: "Utilities (Electricity, Water)", type: "expense", userId: newUser._id },  
+            { name: "Utilities (Electricity, Water)", type: "expense", userId: newUser._id },
             { name: "Groceries & Essentials", type: "expense", userId: newUser._id },
-            { name: "Healthcare & Insurance", type: "expense", userId: newUser._id },      
+            { name: "Healthcare & Insurance", type: "expense", userId: newUser._id },
             { name: "Entertainment (Subscriptions)", type: "expense", userId: newUser._id },
             { name: "Shopping", type: "expense", userId: newUser._id },
             { name: "Education", type: "expense", userId: newUser._id },
@@ -62,45 +62,47 @@ const registerUser = async (req , res) => {
         await Category.insertMany(defaultCategories);
 
         return res.status(200).json({
-            success : true,
-            message : "User registered successfully",
-            userId : newUser._id
+            success: true,
+            message: "User registered successfully",
+            userId: newUser._id
         });
     } catch (error) {
-        console.log("Error in register " , error);
-        return res.status(500).json({message : "Server error", error})
+        console.log("Error in register ", error);
+        return res.status(500).json({ message: "Server error", error })
     }
 
 };
 
 
 
-const getOTP = async(req , res) => {
-    
-    try {
-        const {email , password} = req.body;
+const getOTP = async (req, res) => {
 
-        if(!email || !password) {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
             return res.status(400).json({ msg: "All fields are required" });
         }
 
-        const existingUser = await User.findOne({email});
+        const existingUser = await User.findOne({ email });
 
 
-        if(!existingUser) {
+        if (!existingUser) {
             return res.status(401).json({ msg: "User not found" });
         }
 
-        const isMatch = await bcrypt.compare(password , existingUser.password);
-        if(!isMatch) {
+        const isMatch = await bcrypt.compare(password, existingUser.password);
+        if (!isMatch) {
             return res.status(402).json({ msg: "incorrect password" });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000);   // 6-digit otp
-        existingUser.otp = otp;
-        existingUser.otpExpiry = Date.now() + 5*60*1000; // 5-min
-        await existingUser.save();
+        const otpSixDigit = Math.floor(100000 + Math.random() * 900000).toString();   // 6-digit otp
 
+        const otp_token = jwt.sign(
+            { otpSixDigit , email },
+            process.env.JWT_SECRET,
+            { expiresIn: "5m" },    // <-- auto-expiry (after 5 min, it will make token invalid)
+        );
 
         // Send OTP via mail
         const transporter = nodemailer.createTransport({
@@ -123,13 +125,14 @@ const getOTP = async(req , res) => {
             console.log("Email sent: ", info.response);
         } catch (err) {
             console.error("Email error: ", err);
-            return res.status(500).json({success: false, msg: "Error in sending mail"});
+            return res.status(500).json({ success: false, msg: "Error in sending mail" });
         }
 
 
         return res.status(200).json({
-            success : true,
-            msg : "OTP Successfully sent to mail",
+            success: true,
+            msg: "OTP Successfully sent to mail",
+            otp_token: otp_token,
         });
 
     } catch (error) {
@@ -139,72 +142,76 @@ const getOTP = async(req , res) => {
 }
 
 
-const verifyOTP = async(req , res) => {
+const verifyOTP = async (req, res) => {
     try {
-        const {email , otp} = req.body;
+        const { email, enteredOtp, otpToken } = req.body;
 
-        if(!email || !otp) {
+        if (!email || !enteredOtp || !otpToken) {
             return res.status(400).json({ msg: "All fields are required" });
         }
 
-        const existingUser = await User.findOne({email});
-
-
-        if(!existingUser) {
+        // Check user
+        const existingUser = await User.findOne({ email });
+        if (!existingUser) {
             return res.status(401).json({ msg: "User not found" });
         }
 
-        // check otp and expiry
-        if(existingUser.otp !== Number(otp)) {
+        // Verify OTP token
+        let decoded;
+        try {
+            decoded = jwt.verify(otpToken, process.env.JWT_SECRET);
+        }
+        catch (err) {
+            if (err.name === "TokenExpiredError") {
+                return res.status(400).json({ success: false, msg: "OTP expired" });
+            }
+            return res.status(400).json({ success: false, msg: "Invalid OTP token" });
+        }
+
+        // Match OTP
+        if (decoded.otpSixDigit !== enteredOtp) {
             return res.status(400).json({ success: false, msg: "Invalid OTP" });
         }
 
-        if(existingUser.otpExpiry < Date.now()) {
-            return res.status(400).json({ success: false, msg: "OTP expired" });
-        }
-
-        // clear otp fields
-        existingUser.otp = undefined;
-        existingUser.otpExpiry = undefined;
-        await existingUser.save();
-
+        // Generate main login token
         const token = jwt.sign(
-            {userId : existingUser._id,
-             email : existingUser.email},
-             process.env.JWT_SECRET,
-            {expiresIn : "7d"}
+            {
+                userId: existingUser._id,
+                email: existingUser.email,
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
         );
 
-        return res.status(200).json({ 
-            success: true, 
-            msg: "OTP verified successfully" , 
-            token , 
+        return res.status(200).json({
+            success: true,
+            msg: "OTP verified successfully",
+            token,
             userData: {
                 id: existingUser._id,
                 name: existingUser.name,
                 email: existingUser.email,
                 mobile: existingUser.mobile,
-                } 
-            });
-
+            },
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ success: false, msg: "Server error in verifying otp" });
     }
-}
+};
 
 
 
-const getUserDetails = async(req , res) => {
+const getUserDetails = async (req, res) => {
     const userId = req.user.userId;
 
     try {
-        const user = await User.findOne({_id : userId});
+        const user = await User.findOne({ _id: userId });
 
-        if(!user) {
+        if (!user) {
             return res.status(400).json({
                 success: false,
-                msg : "User Not Found",
+                msg: "User Not Found",
             })
         }
 
@@ -226,13 +233,13 @@ const getUserDetails = async(req , res) => {
 
 
 
-const updateUser = async(req , res) => {
+const updateUser = async (req, res) => {
     try {
-        
+
         const userId = req.user.userId; // From authMiddleware
         const updateData = req.body;
 
-        if(!updateData || Object.keys(updateData).length === 0) {
+        if (!updateData || Object.keys(updateData).length === 0) {
             return res.status(400).json({ msg: "No data to update." });
         }
 
@@ -244,50 +251,50 @@ const updateUser = async(req , res) => {
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             updateData,
-            {new: true},
+            { new: true },
         )
 
-        if(!updatedUser) {
-            return res.status(401).json({msg : "User not found"})
+        if (!updatedUser) {
+            return res.status(401).json({ msg: "User not found" })
         }
 
         return res.status(200).json({
-            success : true,
-            msg : "Updated Successfully",
+            success: true,
+            msg: "Updated Successfully",
             userData: {
-                name : updatedUser.name,
-                email : updatedUser.email,
-                mobile : updatedUser.mobile
+                name: updatedUser.name,
+                email: updatedUser.email,
+                mobile: updatedUser.mobile
             }
         });
 
     } catch (error) {
-        return res.status(500).json({msg : "Server Error from updateUser"});
+        return res.status(500).json({ msg: "Server Error from updateUser" });
     }
 }
 
 
 
-const updateCurrency = async(req , res) => {
+const updateCurrency = async (req, res) => {
 
     try {
         const userId = req.user.userId;
-        const {currency} = req.body;
+        const { currency } = req.body;
 
-        if(!currency) {
+        if (!currency) {
             return res.status(400).json({ message: "Currency is required" });
         }
 
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            {currency: currency},
-            {new : true}
+            { currency: currency },
+            { new: true }
         );
 
-        return res.status(200).json({ 
-            success : true,
-            message: "Currency updated", 
-            currency: updatedUser.currency 
+        return res.status(200).json({
+            success: true,
+            message: "Currency updated",
+            currency: updatedUser.currency
         });
     } catch (err) {
         return res.status(500).json({ message: "Server Error", error: err.message });
@@ -297,12 +304,12 @@ const updateCurrency = async(req , res) => {
 
 
 
-const updatePassword = async(req , res) => {
+const updatePassword = async (req, res) => {
     const userId = req.user.userId;
-    const {oldPassword , newPassword , confirmPassword} = req.body;
+    const { oldPassword, newPassword, confirmPassword } = req.body;
 
     try {
-        const existingUser = await User.findOne({_id : userId});
+        const existingUser = await User.findOne({ _id: userId });
         if (!existingUser) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -311,20 +318,20 @@ const updatePassword = async(req , res) => {
             return res.status(400).json({ message: "Password must be at least 6 characters long" });
         }
 
-        const match = await bcrypt.compare(oldPassword , existingUser.password);
-        if(!match) {
-            return res.status(401).json({message: "Old Password is wrong"});
+        const match = await bcrypt.compare(oldPassword, existingUser.password);
+        if (!match) {
+            return res.status(401).json({ message: "Old Password is wrong" });
         }
 
-        if(oldPassword === newPassword) {
-            return res.status(401).json({message: "Old Password and New Password must be different"})
+        if (oldPassword === newPassword) {
+            return res.status(401).json({ message: "Old Password and New Password must be different" })
         }
 
-        if(newPassword !== confirmPassword) {
-            return res.status(401).json({message: "Confirm Password must be equal to New Password"});
+        if (newPassword !== confirmPassword) {
+            return res.status(401).json({ message: "Confirm Password must be equal to New Password" });
         }
 
-        
+
         // we can do like this 
         // const hashedPassword = await bcrypt.hash(newPassword , 10);
         // const res = await User.findByIdAndUpdate(
@@ -335,31 +342,31 @@ const updatePassword = async(req , res) => {
 
         // OR
         // we can do like this also
-        existingUser.password = await bcrypt.hash(newPassword , 10);
+        existingUser.password = await bcrypt.hash(newPassword, 10);
         await existingUser.save();
 
         return res.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
-        return res.status(500).json({message: "Server Error"});
+        return res.status(500).json({ message: "Server Error" });
     }
 }
 
 
 
-const deleteAccount = async(req , res) => {
+const deleteAccount = async (req, res) => {
     const userId = req.user.userId;
 
     try {
-        const deletedUser = await User.findByIdAndDelete({_id : userId});
+        const deletedUser = await User.findByIdAndDelete({ _id: userId });
 
         return res.status(200).json({
-            success : true,
-            message : "User Account Deleted Successfully",
-            data : deletedUser
+            success: true,
+            message: "User Account Deleted Successfully",
+            data: deletedUser
         })
     } catch (err) {
         return res.status(500).json({
-            message: "Server Error" , error: err.message
+            message: "Server Error", error: err.message
         })
     }
 }

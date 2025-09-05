@@ -16,6 +16,7 @@ const Login = () => {
   const [email , setEmail] = useState("");
   const [password , setPassword] = useState("");
   const [showOTPModal , setShowOTPModal] = useState(false);
+  const [otp_token , setOtpToken] = useState("");
 
 
 
@@ -25,9 +26,9 @@ const Login = () => {
   useEffect(() => {
       if(token) {
           alert("Redirecting to home page in 2 sec...")
-          toast.success(<div><strong>Welcome!</strong> Thanks for logging in.</div>);
           const timer = setTimeout(() => {
-             navigate("/home");
+            navigate("/home");
+            toast.success(<div><strong>Welcome!</strong> Thanks for logging in.</div>);
           } , 2000);
 
           return () => clearInterval(timer);
@@ -65,6 +66,7 @@ const Login = () => {
 
           if(data.success) {
             setShowOTPModal(true);
+            setOtpToken(data.otp_token);
           }
           else {
             setError(data.msg || "OTP Send Failed");
@@ -163,7 +165,7 @@ const Login = () => {
           </form>
         </div>
       </div>
-      {showOTPModal && <Modals onClose={() => setShowOTPModal(false)} email={email} />}
+      {showOTPModal && <Modals onClose={() => setShowOTPModal(false)} email={email} otpToken={otp_token} />}
     </>
   );
 };
