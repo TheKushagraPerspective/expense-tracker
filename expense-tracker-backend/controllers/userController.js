@@ -102,21 +102,21 @@ const getOTP = async (req, res) => {
         const otpSixDigit = Math.floor(100000 + Math.random() * 900000).toString();   // 6-digit otp
 
         // Ensure OTP folder exists
-        const otpDir = path.join(__dirname, "otps");
-        if (!fs.existsSync(otpDir)) fs.mkdirSync(otpDir);
+        // const otpDir = path.join(__dirname, "otps");
+        // if (!fs.existsSync(otpDir)) fs.mkdirSync(otpDir);
 
-        // Save OTP to file
-        const normalizedEmail = email.toLowerCase();
-        const filePath = path.join(otpDir, `${normalizedEmail}.txt`);
-        const expiry = Date.now() + 5*60*1000; // 5 min
-        const data = { otpSixDigit, expiry };
-        try {
-            fs.writeFileSync(filePath, JSON.stringify(data), "utf-8");
-        } catch (err) {
-            console.error("Error writing OTP file:", err);
-            return res.status(500).json({ success: false, msg: "Failed to save OTP file" });
-        }
-        console.log(`OTP saved for ${normalizedEmail}, expires in 5 minutes`);
+        // // Save OTP to file
+        // const normalizedEmail = email.toLowerCase();
+        // const filePath = path.join(otpDir, `${normalizedEmail}.txt`);
+        // const expiry = Date.now() + 5*60*1000; // 5 min
+        // const data = { otpSixDigit, expiry };
+        // try {
+        //     fs.writeFileSync(filePath, JSON.stringify(data), "utf-8");
+        // } catch (err) {
+        //     console.error("Error writing OTP file:", err);
+        //     return res.status(500).json({ success: false, msg: "Failed to save OTP file" });
+        // }
+        // console.log(`OTP saved for ${normalizedEmail}, expires in 5 minutes`);
 
         // Send OTP via mail
         const transporter = nodemailer.createTransport({
@@ -144,9 +144,9 @@ const getOTP = async (req, res) => {
 
 
         // Store OTP with 5 minutes expiry
-        // console.log("Attempting to store OTP in Redis..."); // <--- Add this line
-        // await client.set(`otp:${email}`, otpSixDigit, {ex:300});
-        // console.log("OTP successfully stored in Redis."); // <--- Add this line
+        console.log("Attempting to store OTP in Redis..."); // <--- Add this line
+        await client.set(`otp:${email}`, otpSixDigit.toString(), 300);
+        console.log("OTP successfully stored in Redis."); // <--- Add this line
 
 
 
@@ -176,40 +176,40 @@ const verifyOTP = async (req, res) => {
             return res.status(401).json({ msg: "User not found" });
         }
 
-        const filePath = path.join(__dirname , "otps" , `${email}.txt`);
+        // const filePath = path.join(__dirname , "otps" , `${email}.txt`);
 
-        if(!fs.existsSync(filePath)) {
-            return { success: false, msg: "OTP not found or expired" };
-        }
+        // if(!fs.existsSync(filePath)) {
+        //     return { success: false, msg: "OTP not found or expired" };
+        // }
 
-        const data = JSON.parse(fs.readFileSync(filePath , "utf-8"));
+        // const data = JSON.parse(fs.readFileSync(filePath , "utf-8"));
 
-        if(Date.now() > data.expiry) {
-            fs.unlinkSync(filePath); // delete expired OTP
-            return { success: false, msg: "OTP expired" };
-        }
+        // if(Date.now() > data.expiry) {
+        //     fs.unlinkSync(filePath); // delete expired OTP
+        //     return { success: false, msg: "OTP expired" };
+        // }
         
-        if(data.otpSixDigit !== enteredOtp) {
-            return res.status(400).json({ success: false, msg: "Incorrect OTP" });
+        // if(data.otpSixDigit !== enteredOtp) {
+        //     return res.status(400).json({ success: false, msg: "Incorrect OTP" });
+        // }
+
+        // // OTP is correct, delete the file
+        // fs.unlinkSync(filePath);
+
+
+
+        const storedOtp = await client.get(`otp:${email}`);
+
+        if (!storedOtp) {
+            return res.status(400).json({ msg: "OTP expired or not found" });
         }
 
-        // OTP is correct, delete the file
-        fs.unlinkSync(filePath);
+        if (storedOtp.toString() !== enteredOtp.toString()) {
+            return res.status(400).json({ msg: "Invalid OTP" });
+        }
 
-
-
-        // const storedOtp = await client.get(`otp:${email}`);
-
-        // if (!storedOtp) {
-        //     return res.status(400).json({ msg: "OTP expired or not found" });
-        // }
-
-        // if (storedOtp !== enteredOtp) {
-        //     return res.status(400).json({ msg: "Invalid OTP" });
-        // }
-
-        // // OTP correct → delete it from Redis (so can’t reuse)
-        // await client.del(`otp:${email}`);
+        // OTP correct → delete it from Redis (so can’t reuse)
+        await client.del(`otp:${email}`);
 
         // Generate main login token
         
