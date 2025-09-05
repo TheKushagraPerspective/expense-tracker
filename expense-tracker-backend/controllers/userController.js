@@ -171,7 +171,7 @@ const verifyOTP = async (req, res) => {
 
         const filePath = path.join(__dirname , "otps" , `${email}.txt`);
 
-        if(fs.existsSync(filePath)) {
+        if(!fs.existsSync(filePath)) {
             return { success: false, msg: "OTP not found or expired" };
         }
 
@@ -183,7 +183,7 @@ const verifyOTP = async (req, res) => {
         }
         
         if(data.otpSixDigit !== enteredOtp) {
-            return { success: false, msg: "Incorrect OTP" };
+            return res.status(400).json({ success: false, msg: "Incorrect OTP" });
         }
 
         // OTP is correct, delete the file
