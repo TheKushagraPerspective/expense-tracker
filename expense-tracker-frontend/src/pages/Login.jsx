@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import "../styles/auth.css"
 import { toast } from "react-toastify";
+import Modals from "../components/Modal_otp";
 
 
 const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
@@ -14,8 +15,10 @@ const Login = () => {
   const [error , setError] = useState("");
   const [email , setEmail] = useState("");
   const [password , setPassword] = useState("");
+  const [showOTPModal , setShowOTPModal] = useState(false);
 
-  
+
+
   // if token is already there then redirect to dashboard (no need to login again until token is there)
   const token = localStorage.getItem("token");
 
@@ -33,7 +36,7 @@ const Login = () => {
 
 
 
-  const handleOnLogin = async(e) => {
+  const handleOngetOTP = async(e) => {
       e.preventDefault();
 
       if(!email.trim() || !password.trim()) {
@@ -54,20 +57,23 @@ const Login = () => {
 
       // now preceed with login
       try {
-          const response = await axios.post(`${BASE_URL}/api/user/login` , {
+          const response = await axios.post(`${BASE_URL}/api/user/get-otp` , {
             email , password
           });
 
           const data = response.data;
-        
-          if(data.success && data.token) {
-              localStorage.setItem("token" , data.token);
-              localStorage.setItem("user" , JSON.stringify(data.userData));
-              toast.success("Login Successful!")
-              navigate("/home");
+
+          if(data.success) {
+            setShowOTPModal(true);
           }
+          // if(data.success && data.token) {
+          //     localStorage.setItem("token" , data.token);
+          //     localStorage.setItem("user" , JSON.stringify(data.userData));
+          //     toast.success("Login Successful!")
+          //     navigate("/home");
+          // }
           else {
-            setError(data.msg || "Login Failed");
+            setError(data.msg || "OTP Send Failed");
           }
 
       } catch (error) {
@@ -93,7 +99,7 @@ const Login = () => {
               Expense Tracker
           </h2>
 
-          <form onSubmit={handleOnLogin} className="space-y-4 mx-10">
+          <form onSubmit={handleOngetOTP} className="space-y-4 mx-10">
               {error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                   {error}
@@ -148,7 +154,7 @@ const Login = () => {
                 type="submit"
                 className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
               >
-                Login
+                Get OTP
             </button>
 
             <p className="text-sm text-center mt-4 text-white">
@@ -163,6 +169,7 @@ const Login = () => {
           </form>
         </div>
       </div>
+      {showOTPModal && <Modals onClose={() => setShowOTPModal(false)} />}
     </>
   );
 };

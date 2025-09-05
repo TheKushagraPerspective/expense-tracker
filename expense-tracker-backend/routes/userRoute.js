@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {registerUser , loginUser , getUserDetails , updateUser , updateCurrency , updatePassword , deleteAccount} = require("../controllers/userController");
+const {registerUser , getOTP , getUserDetails , updateUser , updateCurrency , updatePassword , deleteAccount} = require("../controllers/userController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 
@@ -8,7 +8,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 router.post("/register" , registerUser);
 
 // POST /api/user/login
-router.post("/login" , loginUser);
+router.post("/get-otp" , getOTP);
 
 // GET /api/user/profile
 router.get("/profile" , authMiddleware , getUserDetails);

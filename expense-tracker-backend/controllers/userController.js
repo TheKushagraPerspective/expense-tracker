@@ -3,6 +3,7 @@ const Category = require("../models/Category");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const nodemailer = require("nodemailer");
 
 
 
@@ -74,7 +75,7 @@ const registerUser = async (req , res) => {
 
 
 
-const loginUser = async(req , res) => {
+const getOTP = async(req , res) => {
     
     try {
         const {email , password} = req.body;
@@ -95,22 +96,44 @@ const loginUser = async(req , res) => {
             return res.status(402).json({ msg: "incorrect password" });
         }
 
-        const token = jwt.sign(
-            {userId : existingUser._id,
-             email : existingUser.email},
-             process.env.JWT_SECRET,
-            {expiresIn : "7d"}
-        );
+        const otp = Math.floor(100000 + Math.random() * 900000);   // 6-digit otp
+        existingUser.otp = otp;
+        existingUser.otpExpiry = Date.now() + 5*60*1000; // 5-min
+        await existingUser.save();
+
+
+        // Send OTP via mail
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.Email_User,
+                pass: process.env.Email_Password,
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.Email_User,
+            to: existingUser.email,
+            subject: "Your OTP Code",
+            text: `Your OTP is ${otp}. It expires in 5 minutes.`,
+        }
+
+        await transporter.sendMail(mailOptions , (err) => {
+            if(err) {
+                return res.status(401).json({success: false , msg: "Error in sending mail"})
+            }
+        });
+
+        // const token = jwt.sign(
+        //     {userId : existingUser._id,
+        //      email : existingUser.email},
+        //      process.env.JWT_SECRET,
+        //     {expiresIn : "7d"}
+        // );
 
         return res.status(200).json({
             success : true,
-            msg : "Login Successfully",
-            token,
-            userData: {
-                name : existingUser.name,
-                email : existingUser.email,
-                mobile : existingUser.mobile
-            }
+            msg : "OTP Successfully sent to mail",
         });
 
     } catch (error) {
@@ -292,9 +315,11 @@ const deleteAccount = async(req , res) => {
 
 
 
+
+
 module.exports = {
     registerUser,
-    loginUser,
+    getOTP,
     getUserDetails,
     updateUser,
     updateCurrency,
