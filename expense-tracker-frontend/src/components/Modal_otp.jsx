@@ -11,7 +11,7 @@ const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 const Modals = ({ onClose , email }) => {
 
   const navigate = useNavigate();
-  const [otp , setOtp] = useState("");
+  const [enteredOtp , setEnteredOtp] = useState("");
   const modalRef = useRef();
 
   const closeModal = (e) => {
@@ -26,8 +26,8 @@ const Modals = ({ onClose , email }) => {
 
     try {
       const response = await axios.post(`${BASE_URL}/api/user/verify-otp` , {
-          email,   // <-- comes from props
-          otp,     // <-- user entered
+          email: email,   // <-- comes from props
+          otp: enteredOtp,     // <-- user entered
       })
 
       if(response.data.success) {
@@ -47,10 +47,10 @@ const Modals = ({ onClose , email }) => {
       }
     } catch (error) {
       if(error.response && error.response.data && error.response.data.msg) {
-          setError(error.response.data.msg);
+          toast.error(error.response.data.msg);
         }
         else {
-          setError("Error verifying OTP");
+          toast.error("Error verifying OTP");
         }
     }
   }
@@ -90,8 +90,8 @@ const Modals = ({ onClose , email }) => {
                   maxLength="6"
                   placeholder="Enter 6-digit OTP"
                   className="bg-white/90 w-full px-4 py-3 text-black border border-gray-300 rounded-lg text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-violet-400"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  value={enteredOtp}
+                  onChange={(e) => setEnteredOtp(e.target.value)}
                 />
                 <button
                   type="submit"
