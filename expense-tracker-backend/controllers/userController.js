@@ -101,15 +101,22 @@ const getOTP = async (req, res) => {
 
         const otpSixDigit = Math.floor(100000 + Math.random() * 900000).toString();   // 6-digit otp
 
-        const filePath = path.join(__dirname , "otps" , `${email}.txt`);
-        const expiry = Date.now() + 5*60*1000;
-        const data = {
-            otpSixDigit,
-            expiry
-        }
+        // Ensure OTP folder exists
+        const otpDir = path.join(__dirname, "otps");
+        if (!fs.existsSync(otpDir)) fs.mkdirSync(otpDir);
 
-        fs.writeFileSync(filePath , JSON.stringify(data) , "utf-8");
-        console.log(`OTP saved for ${email}, expires in 5 minutes`);
+        // Save OTP to file
+        const normalizedEmail = email.toLowerCase();
+        const filePath = path.join(otpDir, `${normalizedEmail}.txt`);
+        const expiry = Date.now() + 5*60*1000; // 5 min
+        const data = { otpSixDigit, expiry };
+        try {
+            fs.writeFileSync(filePath, JSON.stringify(data), "utf-8");
+        } catch (err) {
+            console.error("Error writing OTP file:", err);
+            return res.status(500).json({ success: false, msg: "Failed to save OTP file" });
+        }
+        console.log(`OTP saved for ${normalizedEmail}, expires in 5 minutes`);
 
         // Send OTP via mail
         const transporter = nodemailer.createTransport({
