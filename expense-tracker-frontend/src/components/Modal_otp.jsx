@@ -1,25 +1,36 @@
-import React, { useRef , useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X, ShieldCheck } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
-
 const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 
-
-const Modals = ({ onClose , email , otpToken }) => {
+const Modals = ({ onClose , email , handleResendOtp }) => {
 
   const navigate = useNavigate();
   const [enteredOtp , setEnteredOtp] = useState("");
-  const modalRef = useRef();
+  const [resendCoolDown , setResendCoolDown] = useState(0);
 
-  const closeModal = (e) => {
-    if (modalRef.current === e.target) {
-      onClose();
+  useEffect(() => {
+    if(resendCoolDown > 0) {
+      const timer = setTimeout(() => {
+        setResendCoolDown(resendCoolDown - 1);
+      } , 1000);
+
+      return () => clearInterval(timer);
     }
-  };
+  } , [resendCoolDown]);
 
+
+  const handleOnResendClick = (e) => {
+    if(resendCoolDown > 0) return;  // Prevent click if cooldown active
+
+    if(handleResendOtp) {
+      handleResendOtp(e);
+      setResendCoolDown(60);
+    }
+  }
 
   const handleOnVerify = async(e) => {
     e.preventDefault();
@@ -31,16 +42,16 @@ const Modals = ({ onClose , email , otpToken }) => {
       })
 
       if(response.data.success) {
+          toast.success("OTP Verified Successfully!");
           localStorage.setItem("token" , response.data.token);
           localStorage.setItem("user" , JSON.stringify(response.data.userData));
-          toast.success("OTP Verified Successfully!");
           onClose();
 
-          alert("Redirecting to home page in 2 sec...")
+          toast.info("Redirecting to home page in 3 sec...")
           const timer = setTimeout(() => {
               navigate("/home");
               toast.success(<div><strong>Welcome!</strong> Thanks for logging in.</div>);
-          } , 2000);
+          } , 3000);
       }
       else {
           toast.error(response.data.msg || "Invalid OTP | Expired OTP")
@@ -59,8 +70,6 @@ const Modals = ({ onClose , email , otpToken }) => {
     <>
       {/* Overlay (outer div) */}
       <div
-        ref={modalRef}
-        onClick={closeModal}
         className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50"
       >
           {/* Modal Container */}
@@ -106,8 +115,8 @@ const Modals = ({ onClose , email , otpToken }) => {
               {/* Footer */}
               <p className="text-center text-xs text-gray-300 mt-6">
                 Didn’t receive the code?{" "}
-                <span className="text-yellow-300 cursor-pointer hover:underline">
-                  Resend OTP
+                <span className="text-yellow-300 cursor-pointer hover:underline" onClick={handleOnResendClick}>
+                  {resendCoolDown > 0 ? `Resend in ${resendCoolDown}s` : "Resend OTP"}
                 </span>
               </p>
           </div>

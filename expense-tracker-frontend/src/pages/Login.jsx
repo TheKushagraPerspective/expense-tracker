@@ -18,22 +18,20 @@ const Login = () => {
   const [showOTPModal , setShowOTPModal] = useState(false);
 
 
-
   // if token is already there then redirect to dashboard (no need to login again until token is there)
   const token = localStorage.getItem("token");
 
   useEffect(() => {
       if(token) {
-          alert("Redirecting to home page in 2 sec...")
+          toast.info("Redirecting to home page in 3 sec...")
           const timer = setTimeout(() => {
             navigate("/home");
             toast.success(<div><strong>Welcome!</strong> Thanks for logging in.</div>);
-          } , 2000);
+          } , 3000);
 
           return () => clearInterval(timer);
       }
   } , [token]);
-
 
 
   const handleOngetOTP = async(e) => {
@@ -54,8 +52,7 @@ const Login = () => {
 
       setError("");
 
-
-      // now preceed with login
+      // now preceed with get-otp
       try {
           const response = await axios.post(`${BASE_URL}/api/user/get-otp` , {
             email , password
@@ -64,6 +61,7 @@ const Login = () => {
 
           if(response.data.success) {
             setShowOTPModal(true);
+            toast.success("Enter OTP to get loggedIn")
           }
           else {
             setError(data.msg || "OTP Send Failed");
@@ -74,11 +72,10 @@ const Login = () => {
             setError(error.response.data.msg);
           }
           else {
-            setError("OTP Send Failed. Please check your credentials or try again later.");
+            setError("OTP Send Failed. Please check your credentials/internet or try again later.");
           }
       }
   }
-
 
   
   return (
@@ -162,7 +159,7 @@ const Login = () => {
           </form>
         </div>
       </div>
-      {showOTPModal && <Modals onClose={() => setShowOTPModal(false)} email={email} />}
+      {showOTPModal && <Modals onClose={() => setShowOTPModal(false)} email={email} handleResendOtp={handleOngetOTP} />}
     </>
   );
 };

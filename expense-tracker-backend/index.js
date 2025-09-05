@@ -10,7 +10,6 @@ const transactionRoute = require("./routes/transactionRoute");
 const feedbackRoute = require("./routes/feedbackRoute");
 
 
-
 const connectionDB = require("./config/connection");
 connectionDB(); 
 
@@ -27,13 +26,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-
-// explicitly handle preflight
-// app.options("/*", cors(corsOptions));
-
 app.use(express.json());
-
 
 
 app.get("/", (req, res) => {
