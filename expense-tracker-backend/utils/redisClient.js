@@ -1,10 +1,7 @@
 const redis = require("redis")
 
 const client = redis.createClient({
-  socket: {
-    host: "127.0.0.1", // force IPv4
-    port: 6379,
-  },
+  url: process.env.UPSTASH_REDIS_URL, // Use your Upstash Redis URL from .env
 });
 
 client.on("error" , (err) => {
@@ -12,7 +9,7 @@ client.on("error" , (err) => {
 })
 
 client.on("connect" , () => {
-    console.log("✅ Connected to Redis");
+    console.log("✅ Connected to Upstash Redis");
 })
 
 client.connect();
