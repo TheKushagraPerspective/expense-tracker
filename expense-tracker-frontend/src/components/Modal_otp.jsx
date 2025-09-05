@@ -48,7 +48,6 @@ const Modals = ({ onClose , email , handleResendOtp }) => {
           localStorage.setItem("user" , JSON.stringify(response.data.userData));
           onClose();
 
-          alert("Redirecting to home page in 3 sec...")
           const timer = setTimeout(() => {
               navigate("/home");
               toast.success(<div><strong>Welcome!</strong> Thanks for logging in.</div>);
@@ -74,7 +73,7 @@ const Modals = ({ onClose , email , handleResendOtp }) => {
         className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50"
       >
           {/* Modal Container */}
-          <div className="relative bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 rounded-2xl shadow-2xl p-8 w-[90%] max-w-md text-white animate-fadeIn">
+          <div className="relative bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 rounded-2xl shadow-2xl p-8 sm:w-[90%] w-[70%] max-w-md text-white animate-fadeIn">
               {/* Close Button */}
               <button
                 onClick={onClose}
