@@ -2,6 +2,7 @@ import React, { useRef , useState } from "react";
 import { X, ShieldCheck } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
 
 
 const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
@@ -30,6 +31,8 @@ const Modals = ({ onClose , email }) => {
       })
 
       if(response.data.success) {
+          localStorage.setItem("token" , response.data.token);
+          localStorage.setItem("user" , JSON.stringify(response.data.userData));
           toast.success("OTP Verified Successfully!");
           onClose();
 
@@ -38,8 +41,6 @@ const Modals = ({ onClose , email }) => {
               navigate("/home");
               toast.success(<div><strong>Welcome!</strong> Thanks for logging in.</div>);
           } , 2000);
-
-          return () => clearInterval(timer);
       }
       else {
           toast.error(response.data.msg || "Invalid OTP | Expired OTP")

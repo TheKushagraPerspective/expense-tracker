@@ -126,12 +126,6 @@ const getOTP = async(req , res) => {
             return res.status(500).json({success: false, msg: "Error in sending mail"});
         }
 
-        // const token = jwt.sign(
-        //     {userId : existingUser._id,
-        //      email : existingUser.email},
-        //      process.env.JWT_SECRET,
-        //     {expiresIn : "7d"}
-        // );
 
         return res.status(200).json({
             success : true,
@@ -174,7 +168,24 @@ const verifyOTP = async(req , res) => {
         existingUser.otpExpiry = undefined;
         await existingUser.save();
 
-        return res.status(200).json({ success: true, msg: "OTP verified successfully" });
+        const token = jwt.sign(
+            {userId : existingUser._id,
+             email : existingUser.email},
+             process.env.JWT_SECRET,
+            {expiresIn : "7d"}
+        );
+
+        return res.status(200).json({ 
+            success: true, 
+            msg: "OTP verified successfully" , 
+            token , 
+            userData: {
+                id: existingUser._id,
+                name: existingUser.name,
+                email: existingUser.email,
+                mobile: existingUser.mobile,
+                } 
+            });
 
     } catch (error) {
         console.error(error);

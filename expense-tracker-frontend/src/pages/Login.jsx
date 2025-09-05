@@ -66,12 +66,6 @@ const Login = () => {
           if(data.success) {
             setShowOTPModal(true);
           }
-          // if(data.success && data.token) {
-          //     localStorage.setItem("token" , data.token);
-          //     localStorage.setItem("user" , JSON.stringify(data.userData));
-          //     toast.success("Login Successful!")
-          //     navigate("/home");
-          // }
           else {
             setError(data.msg || "OTP Send Failed");
           }
@@ -81,7 +75,7 @@ const Login = () => {
             setError(error.response.data.msg);
           }
           else {
-            setError("Login failed. Please check your credentials or try again later.");
+            setError("OTP Send Failed. Please check your credentials or try again later.");
           }
       }
   }
