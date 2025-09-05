@@ -61,9 +61,8 @@ const Login = () => {
             email , password
           });
 
-          const data = response.data;
 
-          if(data.success) {
+          if(response.data.success) {
             setShowOTPModal(true);
           }
           else {
