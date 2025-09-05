@@ -29,6 +29,7 @@ const Modals = ({ onClose , email , handleResendOtp }) => {
     if(handleResendOtp) {
       handleResendOtp(e);
       setResendCoolDown(60);
+      toast.success("Successfully resend the otp");
     }
   }
 
@@ -47,7 +48,7 @@ const Modals = ({ onClose , email , handleResendOtp }) => {
           localStorage.setItem("user" , JSON.stringify(response.data.userData));
           onClose();
 
-          toast.info("Redirecting to home page in 3 sec...")
+          alert("Redirecting to home page in 3 sec...")
           const timer = setTimeout(() => {
               navigate("/home");
               toast.success(<div><strong>Welcome!</strong> Thanks for logging in.</div>);
