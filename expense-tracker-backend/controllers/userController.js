@@ -199,6 +199,8 @@ const verifyOTP = async (req, res) => {
 
 
         const storedOtp = await client.get(`otp:${email}`);
+        console.log("stored OTP: " , storedOtp);
+        console.log(storedOtp === enteredOtp);
 
         if (!storedOtp) {
             return res.status(400).json({ msg: "OTP expired or not found" });
