@@ -126,8 +126,7 @@ const getOTP = async (req, res) => {
 
         // Store OTP with 5 minutes expiry
         console.log("Attempting to store OTP in Redis..."); // <--- Add this line
-        await client.set(`otp:${email}`, otpSixDigit)
-        await client.expireat(`otp:${email}`, datetime.datetime.now() + datetime.timedelta(seconds=300))
+        await client.set(`otp:${email}`, otpSixDigit, 300);
         console.log("OTP successfully stored in Redis."); // <--- Add this line
 
 
