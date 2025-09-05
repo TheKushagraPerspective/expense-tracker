@@ -16,7 +16,6 @@ const Login = () => {
   const [email , setEmail] = useState("");
   const [password , setPassword] = useState("");
   const [showOTPModal , setShowOTPModal] = useState(false);
-  const [otp_token , setOtpToken] = useState("");
 
 
 
@@ -66,7 +65,6 @@ const Login = () => {
 
           if(data.success) {
             setShowOTPModal(true);
-            setOtpToken(data.otp_token);
           }
           else {
             setError(data.msg || "OTP Send Failed");
@@ -165,7 +163,7 @@ const Login = () => {
           </form>
         </div>
       </div>
-      {showOTPModal && <Modals onClose={() => setShowOTPModal(false)} email={email} otpToken={otp_token} />}
+      {showOTPModal && <Modals onClose={() => setShowOTPModal(false)} email={email} />}
     </>
   );
 };

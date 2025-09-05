@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const nodemailer = require("nodemailer");
+const client  = require("../utils/redisClient");
 
 
 
@@ -98,12 +99,6 @@ const getOTP = async (req, res) => {
 
         const otpSixDigit = Math.floor(100000 + Math.random() * 900000).toString();   // 6-digit otp
 
-        const otp_token = jwt.sign(
-            { otpSixDigit , email },
-            process.env.JWT_SECRET,
-            { expiresIn: "5m" },    // <-- auto-expiry (after 5 min, it will make token invalid)
-        );
-
         // Send OTP via mail
         const transporter = nodemailer.createTransport({
             service: "gmail",
@@ -129,10 +124,13 @@ const getOTP = async (req, res) => {
         }
 
 
+        // Store the otp in Redis with 5 minutes expiry
+        await client.setEx(email , 300 , otpSixDigit);
+
+
         return res.status(200).json({
             success: true,
             msg: "OTP Successfully sent to mail",
-            otp_token: otp_token,
         });
 
     } catch (error) {
@@ -144,9 +142,9 @@ const getOTP = async (req, res) => {
 
 const verifyOTP = async (req, res) => {
     try {
-        const { email, enteredOtp, otpToken } = req.body;
+        const { email, enteredOtp } = req.body;
 
-        if (!email || !enteredOtp || !otpToken) {
+        if (!email || !enteredOtp) {
             return res.status(400).json({ msg: "All fields are required" });
         }
 
@@ -156,22 +154,19 @@ const verifyOTP = async (req, res) => {
             return res.status(401).json({ msg: "User not found" });
         }
 
-        // Verify OTP token
-        let decoded;
-        try {
-            decoded = jwt.verify(otpToken, process.env.JWT_SECRET);
-        }
-        catch (err) {
-            if (err.name === "TokenExpiredError") {
-                return res.status(400).json({ success: false, msg: "OTP expired" });
-            }
-            return res.status(400).json({ success: false, msg: "Invalid OTP token" });
+        
+        const storedOtp = await client.get(email);
+
+        if (!storedOtp) {
+            return res.status(400).json({ msg: "OTP expired or not found" });
         }
 
-        // Match OTP
-        if (decoded.otpSixDigit !== enteredOtp) {
-            return res.status(400).json({ success: false, msg: "Invalid OTP" });
+        if (storedOtp !== otp) {
+            return res.status(400).json({ msg: "Invalid OTP" });
         }
+
+        // OTP correct → delete it from Redis (so can’t reuse)
+        await client.del(email);
 
         // Generate main login token
         const token = jwt.sign(
