@@ -1,14 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const {registerUser , getOTP , getUserDetails , updateUser , updateCurrency , updatePassword , deleteAccount} = require("../controllers/userController");
+const {registerUser , getOTP , verifyOTP , getUserDetails , updateUser , updateCurrency , updatePassword , deleteAccount} = require("../controllers/userController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 
 // POST /api/user/register
 router.post("/register" , registerUser);
 
-// POST /api/user/login
+// POST /api/user/get-otp
 router.post("/get-otp" , getOTP);
+
+// POST /api/user/verify-otp
+router.post("/verify-otp" , verifyOTP);
 
 // GET /api/user/profile
 router.get("/profile" , authMiddleware , getUserDetails);

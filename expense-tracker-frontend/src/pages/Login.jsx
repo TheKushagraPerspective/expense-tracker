@@ -169,7 +169,7 @@ const Login = () => {
           </form>
         </div>
       </div>
-      {showOTPModal && <Modals onClose={() => setShowOTPModal(false)} />}
+      {showOTPModal && <Modals onClose={() => setShowOTPModal(false)} email={email} />}
     </>
   );
 };

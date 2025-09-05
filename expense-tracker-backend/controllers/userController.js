@@ -145,6 +145,44 @@ const getOTP = async(req , res) => {
 }
 
 
+const verifyOTP = async(req , res) => {
+    try {
+        const {email , otp} = req.body;
+
+        if(!email || !otp) {
+            return res.status(400).json({ msg: "All fields are required" });
+        }
+
+        const existingUser = await User.findOne({email});
+
+
+        if(!existingUser) {
+            return res.status(401).json({ msg: "User not found" });
+        }
+
+        // check otp and expiry
+        if(existingUser.otp !== Number(otp)) {
+            return res.status(400).json({ success: false, msg: "Invalid OTP" });
+        }
+
+        if(existingUser.otpExpiry < Date.now()) {
+            return res.status(400).json({ success: false, msg: "OTP expired" });
+        }
+
+        // clear otp fields
+        existingUser.otp = undefined;
+        existingUser.otpExpiry = undefined;
+        await existingUser.save();
+
+        return res.status(200).json({ success: true, msg: "OTP verified successfully" });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, msg: "Server error in verifying otp" });
+    }
+}
+
+
 
 const getUserDetails = async(req , res) => {
     const userId = req.user.userId;
@@ -322,6 +360,7 @@ const deleteAccount = async(req , res) => {
 module.exports = {
     registerUser,
     getOTP,
+    verifyOTP,
     getUserDetails,
     updateUser,
     updateCurrency,

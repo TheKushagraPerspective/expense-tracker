@@ -1,7 +1,16 @@
-import React, { useRef } from "react";
+import React, { useRef , useState } from "react";
 import { X, ShieldCheck } from "lucide-react";
+import { toast } from "react-toastify";
+import { useNavigate, Link } from "react-router-dom";
 
-const Modals = ({ onClose }) => {
+
+const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
+
+
+const Modals = ({ onClose , email }) => {
+
+  const navigate = useNavigate();
+  const [otp , setOtp] = useState("");
   const modalRef = useRef();
 
   const closeModal = (e) => {
@@ -9,6 +18,41 @@ const Modals = ({ onClose }) => {
       onClose();
     }
   };
+
+
+  const handleOnVerify = async(e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(`${BASE_URL}/api/user/verify-otp` , {
+          email,   // <-- comes from props
+          otp,     // <-- user entered
+      })
+
+      if(response.data.success) {
+          toast.success("OTP Verified Successfully!");
+          onClose();
+
+          alert("Redirecting to home page in 2 sec...")
+          const timer = setTimeout(() => {
+              navigate("/home");
+              toast.success(<div><strong>Welcome!</strong> Thanks for logging in.</div>);
+          } , 2000);
+
+          return () => clearInterval(timer);
+      }
+      else {
+          toast.error(response.data.msg || "Invalid OTP | Expired OTP")
+      }
+    } catch (error) {
+      if(error.response && error.response.data && error.response.data.msg) {
+          setError(error.response.data.msg);
+        }
+        else {
+          setError("Error verifying OTP");
+        }
+    }
+  }
 
   return (
     <>
@@ -45,10 +89,13 @@ const Modals = ({ onClose }) => {
                   maxLength="6"
                   placeholder="Enter 6-digit OTP"
                   className="bg-white/90 w-full px-4 py-3 text-black border border-gray-300 rounded-lg text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
                 />
                 <button
                   type="submit"
                   className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-semibold bg-black/80 hover:bg-black transition duration-200"
+                  onClick={handleOnVerify}
                 >
                   <ShieldCheck size={22} />
                   Verify OTP
