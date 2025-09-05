@@ -113,16 +113,18 @@ const getOTP = async(req , res) => {
 
         const mailOptions = {
             from: process.env.Email_User,
-            to: existingUser.email,
+            to: email,
             subject: "Your OTP Code",
             text: `Your OTP is ${otp}. It expires in 5 minutes.`,
         }
 
-        await transporter.sendMail(mailOptions , (err) => {
-            if(err) {
-                return res.status(401).json({success: false , msg: "Error in sending mail"})
-            }
-        });
+        try {
+            const info = await transporter.sendMail(mailOptions);
+            console.log("Email sent: ", info.response);
+        } catch (err) {
+            console.error("Email error: ", err);
+            return res.status(500).json({success: false, msg: "Error in sending mail"});
+        }
 
         // const token = jwt.sign(
         //     {userId : existingUser._id,
