@@ -85,7 +85,7 @@ const getOTP = async (req, res) => {
             return res.status(400).json({ msg: "All fields are required" });
         }
 
-        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        const existingUser = await User.findOne({ email });
 
 
         if (!existingUser) {
@@ -125,8 +125,7 @@ const getOTP = async (req, res) => {
 
 
         // Store OTP with 5 minutes expiry
-        await client.set(`otp:${email}`, otpSixDigit);
-        await client.expire(`otp:${email}`, 300); // 300 sec = 5 min
+        await client.set(`otp:${email}`, otpSixDigit, { ex: 300 }); // ex is in seconds
 
 
         return res.status(200).json({
@@ -135,7 +134,7 @@ const getOTP = async (req, res) => {
         });
 
     } catch (error) {
-        return res.status(500).json({ msg: "Server error", error });
+        return res.status(500).json({ msg: "Server error in get-otp", error });
     }
 
 }
