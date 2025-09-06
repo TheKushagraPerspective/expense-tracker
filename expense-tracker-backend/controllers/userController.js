@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const nodemailer = require("nodemailer");
-const client  = require("../utils/redisClient");
+const client = require("../utils/redisClient");
 
 
 
@@ -75,20 +75,20 @@ const registerUser = async (req, res) => {
 };
 
 
-const Login = async(req , res) => {
-    
+const Login = async (req, res) => {
+
     try {
-        const {email , password} = req.body;
+        const { email, password } = req.body;
         if (!email || !password) {
             return res.status(400).json({ msg: "All fields are required" });
         }
 
-        const existingUser = await User.findOne({email});
+        const existingUser = await User.findOne({ email });
         if (!existingUser) {
             return res.status(401).json({ msg: "User not found" });
         }
 
-        const isMatch = await bcrypt.compare(password , existingUser.password);
+        const isMatch = await bcrypt.compare(password, existingUser.password);
         if (!isMatch) {
             return res.status(402).json({ msg: "incorrect password" });
         }
@@ -116,7 +116,7 @@ const Login = async(req , res) => {
         });
 
     } catch (error) {
-        
+
     }
 
 }
@@ -162,7 +162,7 @@ const getOTP = async (req, res) => {
         }
 
         // Store OTP with 5 minutes expiry
-        await client.set(`otp:${email}`, otpSixDigit.toString(), {ex : 300});
+        await client.set(`otp:${email}`, otpSixDigit.toString(), { ex: 300 });
 
         return res.status(200).json({
             success: true,
@@ -229,6 +229,68 @@ const verifyOTP = async (req, res) => {
         return res.status(500).json({ success: false, msg: "Server error in verifying otp" });
     }
 };
+
+
+const requestReset = async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ msg: "Email field is required" });
+    }
+
+    try {
+        // Check user
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        if (!existingUser) {
+            return res.status(401).json({ msg: "User not found" });
+        }
+
+        const resetToken = jwt.sign(
+            {
+                userId: existingUser._id,
+                email: existingUser.email,
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "15m"
+            },
+        );
+
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.Email_User,
+                pass: process.env.Email_Password,
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.Email_User,
+            to: email,
+            subject: "Reset your Expense Tracker password",
+            text: `<pre> Hi Kushagra,
+                Click the link below to reset your password. This link is valid for 15 minutes:
+                https://your-frontend.com/reset-password?token=${resetToken}
+                If you didn’t request this, you can ignore this email.</pre>`,
+        }
+
+        try {
+            const info = await transporter.sendMail(mailOptions);
+            console.log("Email sent: ", info.response);
+        } catch (err) {
+            console.error("Email error: ", err);
+            return res.status(500).json({ success: false, msg: "Error in sending mail" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            msg: "Verification Link Successfully sent to mail",
+            token: resetToken
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, msg: "Server error in requestReset password" });
+    }
+}
 
 
 
@@ -409,6 +471,7 @@ module.exports = {
     Login,
     getOTP,
     verifyOTP,
+    requestReset,
     getUserDetails,
     updateUser,
     updateCurrency,

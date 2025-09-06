@@ -144,10 +144,10 @@ const Login = () => {
 
           {/* Toggle buttons */}
           <div className="flex mb-6 gap-2">
-              <button className={`flex-1 py-2 rounded-l-md transition duration-500 ${loginMethod === "password" ? "bg-white text-indigo-600 font-semibold" : "bg-indigo-400 text-white"}`} onClick={() => {setLoginMethod("password"); setError("");}}>
+              <button className={`flex-1 py-2 rounded-l-md transition duration-500 ${loginMethod === "password" ? "bg-gradient-to-br from-white via-gray-200 to-gray-400 text-indigo-600 font-semibold shadow" : "bg-gradient-to-br from-indigo-800 via-purple-800 to-pink-800 shadow-2xl text-white"}`} onClick={() => {setLoginMethod("password"); setError("");}}>
                 Login with Password
               </button>
-              <button className={`flex-1 py-2 rounded-r-md transition duration-500 ${loginMethod === "otp" ? "bg-white text-indigo-600 font-semibold" : "bg-indigo-400 text-white"}`} onClick={() => {setLoginMethod("otp"); setError("");}}>
+              <button className={`flex-1 py-2 rounded-r-md transition duration-500 ${loginMethod === "otp" ? "bg-gradient-to-br from-white via-gray-200 to-gray-400 text-indigo-600 font-semibold" : "bg-gradient-to-br from-indigo-800 via-purple-800 to-pink-800 shadow-2xl text-white"}`} onClick={() => {setLoginMethod("otp"); setError("");}}>
                 Login with OTP
               </button>
           </div>

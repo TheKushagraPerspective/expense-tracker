@@ -13,6 +13,7 @@ import Profile from "./pages/Profile";
 import Home from "./pages/Home";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Reset_Password from "./pages/Reset_Password";
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           {/* public routes */}
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<Reset_Password />} />
           {/* public routes */}
 
 

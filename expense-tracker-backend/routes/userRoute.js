@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {registerUser , Login , getOTP , verifyOTP , getUserDetails , updateUser , updateCurrency , updatePassword , deleteAccount} = require("../controllers/userController");
+const {registerUser , Login , getOTP , verifyOTP , requestReset , getUserDetails , updateUser , updateCurrency , updatePassword , deleteAccount} = require("../controllers/userController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 
@@ -15,6 +15,9 @@ router.post("/get-otp" , getOTP);
 
 // POST /api/user/verify-otp
 router.post("/verify-otp" , verifyOTP);
+
+// POST /api/user/request-reset
+router.post("/request-reset" , requestReset);
 
 // GET /api/user/profile
 router.get("/profile" , authMiddleware , getUserDetails);
