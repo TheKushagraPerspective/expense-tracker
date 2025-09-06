@@ -150,7 +150,7 @@ const Reset_Password = () => {
             </div>
 
             {/* Modal opens if verified */}
-            {isVerified && <Modals_ResetPass token={token} email={enteredEmail} onClose={() => setIsVerified(false)} />}
+            {isVerified && <Modals_ResetPass token={token} onClose={() => setIsVerified(false)} />}
         </>
     );
 };

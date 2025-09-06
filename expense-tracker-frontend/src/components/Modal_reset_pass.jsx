@@ -34,7 +34,7 @@ const Modals_ResetPass = ({token , onClose , email}) => {
         }
 
         if (formData.newPassword !== formData.confirmNewPassword) {
-            toast.error("Passwords do not match");
+            toast.error("newPasswords do not match with confirmNewPassword");
             return;
         }
 

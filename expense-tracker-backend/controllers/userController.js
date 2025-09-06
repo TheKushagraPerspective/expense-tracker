@@ -317,26 +317,33 @@ const verifyToken = async (req, res) => {
 
 
 const resetPassword = async (req, res) => {
-    const { token, newPassword, email } = req.body;
+    const { token, newPassword } = req.body;
 
     try {
-        const existingUser = await User.findOne({ email });
+        const decoded = jwt.verify(token , process.env.JWT_SECRET);
+
+        const existingUser = await User.findOne({ email: decoded.email.toLowerCase() });
         if (!existingUser) {
             return res.status(404).json({ msg: "User not found" });
         }
 
+        const isMatch = await bcrypt.compare(newPassword , existingUser.password);
+        if(isMatch) {
+            return res.status(404).json({success: false , msg: "New Password must be different from Old Password"})
+        }
+
         // we can do like this 
-        // const hashedPassword = await bcrypt.hash(newPassword , 10);
-        // const res = await User.findByIdAndUpdate(
-        //     userId,
-        //     {password: newPassword},
-        //     {new: true}
-        // )
+        const hashedPassword = await bcrypt.hash(newPassword , 10);
+        const res = await User.findByIdAndUpdate(
+            decoded.userId,
+            {password: newPassword},
+            {new: true}
+        )
 
         // OR
-        // we can do like this also
-        existingUser.password = await bcrypt.hash(newPassword, 10);
-        await existingUser.save();
+        // // we can do like this also
+        // existingUser.password = await bcrypt.hash(newPassword, 10);
+        // await existingUser.save();
 
         return res.status(200).json({ success: true, msg: "Password updated successfully" });
     } catch (error) {
