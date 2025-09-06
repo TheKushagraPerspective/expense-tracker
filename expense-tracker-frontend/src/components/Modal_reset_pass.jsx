@@ -6,7 +6,7 @@ import axios from "axios";
 
 const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 
-const Modals_ResetPass = ({token , onClose}) => {
+const Modals_ResetPass = ({token , onClose , email}) => {
 
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -28,6 +28,11 @@ const Modals_ResetPass = ({token , onClose}) => {
             return;
         }
 
+        if (formData.newPassword.length < 6) {
+            toast.error("Password must be at least 6 characters long");
+            return;
+        }
+
         if (formData.newPassword !== formData.confirmNewPassword) {
             toast.error("Passwords do not match");
             return;
@@ -35,11 +40,11 @@ const Modals_ResetPass = ({token , onClose}) => {
 
         try {
             const response = await axios.post(`${BASE_URL}/api/user/reset-password`, {
-                token , newPassword: formData.newPassword
+                token , newPassword: formData.newPassword , email
             })
 
             if (response.data.success) {
-                toast.success("Password updated successfully!");
+                toast.success("Password updated successfully!, redirecting you to Login page");
                 onClose();
                 navigate("/");
             }

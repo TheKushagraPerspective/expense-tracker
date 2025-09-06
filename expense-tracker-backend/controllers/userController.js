@@ -293,6 +293,34 @@ const requestReset = async (req, res) => {
 }
 
 
+const resetPassword = async(req , res) => {
+    const { token , newPassword , email} = req.body;
+
+    try {
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        if (!existingUser) {
+            return res.status(404).json({ msg: "User not found" });
+        }
+
+        // we can do like this 
+        // const hashedPassword = await bcrypt.hash(newPassword , 10);
+        // const res = await User.findByIdAndUpdate(
+        //     userId,
+        //     {password: newPassword},
+        //     {new: true}
+        // )
+
+        // OR
+        // we can do like this also
+        existingUser.password = await bcrypt.hash(newPassword, 10);
+        await existingUser.save();
+
+        return res.status(200).json({ success: true , msg: "Password updated successfully" });
+    } catch (error) {
+        return res.status(500).json({ msg: "Server Error" });
+    }
+}
+
 
 const getUserDetails = async (req, res) => {
     const userId = req.user.userId;
