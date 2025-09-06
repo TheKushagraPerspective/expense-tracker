@@ -270,7 +270,7 @@ const requestReset = async (req, res) => {
             subject: "Reset your Expense Tracker password",
             text: `<pre> Hi Kushagra,
                 Click the link below to reset your password. This link is valid for 15 minutes:
-                https://your-frontend.com/reset-password?token=${resetToken}
+                https://https://expense-tracker-frontend-71kl.onrender.com/#/reset-password?token=${resetToken}
                 If you didn’t request this, you can ignore this email.</pre>`,
         }
 

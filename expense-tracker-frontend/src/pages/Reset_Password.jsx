@@ -62,7 +62,7 @@ const Reset_Password = () => {
 
         try {
             const response = await axios.post(`${BASE_URL}/api/user/request-reset`, {
-                enteredEmail,
+                email: enteredEmail,
             });
 
             if (response.data.success) {
