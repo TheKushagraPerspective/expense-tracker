@@ -75,23 +75,64 @@ const registerUser = async (req, res) => {
 };
 
 
+const Login = async(req , res) => {
+    
+    try {
+        const {email , password} = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ msg: "All fields are required" });
+        }
+
+        const existingUser = await User.findOne({email});
+        if (!existingUser) {
+            return res.status(401).json({ msg: "User not found" });
+        }
+
+        const isMatch = await bcrypt.compare(password , existingUser.password);
+        if (!isMatch) {
+            return res.status(402).json({ msg: "incorrect password" });
+        }
+
+        // Generate main login token
+        const token = jwt.sign(
+            {
+                userId: existingUser._id,
+                email: existingUser.email,
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        return res.status(200).json({
+            success: true,
+            msg: "Credentials verified successfully",
+            token,
+            userData: {
+                id: existingUser._id,
+                name: existingUser.name,
+                email: existingUser.email,
+                mobile: existingUser.mobile,
+            },
+        });
+
+    } catch (error) {
+        
+    }
+
+}
+
 
 const getOTP = async (req, res) => {
 
     try {
-        const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({ msg: "All fields are required" });
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ msg: "Email field is required" });
         }
 
         const existingUser = await User.findOne({ email });
         if (!existingUser) {
             return res.status(401).json({ msg: "User not found" });
-        }
-
-        const isMatch = await bcrypt.compare(password, existingUser.password);
-        if (!isMatch) {
-            return res.status(402).json({ msg: "incorrect password" });
         }
 
         const otpSixDigit = Math.floor(100000 + Math.random() * 900000).toString();   // 6-digit otp
@@ -365,6 +406,7 @@ const deleteAccount = async (req, res) => {
 
 module.exports = {
     registerUser,
+    Login,
     getOTP,
     verifyOTP,
     getUserDetails,
