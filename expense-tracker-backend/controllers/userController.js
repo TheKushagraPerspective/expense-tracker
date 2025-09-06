@@ -270,7 +270,7 @@ const requestReset = async (req, res) => {
             subject: "Reset your Expense Tracker password",
             text: `<pre> Hi Kushagra,
                 Click the link below to reset your password. This link is valid for 15 minutes:
-                https://https://expense-tracker-frontend-71kl.onrender.com/#/reset-password?token=${resetToken}
+                https://expense-tracker-frontend-71kl.onrender.com/#/reset-password?token=${resetToken}
                 If you didn’t request this, you can ignore this email.</pre>`,
         }
 
@@ -301,7 +301,7 @@ const verifyToken = async (req, res) => {
     }
 
     try {
-        const decode = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         return res.status(200).json({
             success: true,
@@ -312,7 +312,8 @@ const verifyToken = async (req, res) => {
     } catch (error) {
         return res.status(400).json({ success: false, msg: "Invalid or expired reset link" });
     }
-}
+};
+
 
 
 const resetPassword = async (req, res) => {
