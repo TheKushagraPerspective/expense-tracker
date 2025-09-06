@@ -293,8 +293,30 @@ const requestReset = async (req, res) => {
 }
 
 
-const resetPassword = async(req , res) => {
-    const { token , newPassword , email} = req.body;
+const verifyToken = async (req, res) => {
+    const { token } = req.body;
+
+    if (!token) {
+        return res.status(400).json({ success: false, msg: "Token is required" });
+    }
+
+    try {
+        const decode = jwt.verify(token, process.env.JWT_SECRET);
+
+        return res.status(200).json({
+            success: true,
+            msg: "Token is valid",
+            userId: decoded.userId,
+            email: decoded.email
+        });
+    } catch (error) {
+        return res.status(400).json({ success: false, msg: "Invalid or expired reset link" });
+    }
+}
+
+
+const resetPassword = async (req, res) => {
+    const { token, newPassword, email } = req.body;
 
     try {
         const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -315,7 +337,7 @@ const resetPassword = async(req , res) => {
         existingUser.password = await bcrypt.hash(newPassword, 10);
         await existingUser.save();
 
-        return res.status(200).json({ success: true , msg: "Password updated successfully" });
+        return res.status(200).json({ success: true, msg: "Password updated successfully" });
     } catch (error) {
         return res.status(500).json({ msg: "Server Error" });
     }
@@ -500,6 +522,7 @@ module.exports = {
     getOTP,
     verifyOTP,
     requestReset,
+    verifyToken,
     resetPassword,
     getUserDetails,
     updateUser,

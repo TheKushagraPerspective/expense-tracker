@@ -36,7 +36,7 @@ const Reset_Password = () => {
                         setError("Invalid or expired reset link.");
                     }
                 } catch (error) {
-                    setError("Invalid or expired reset link.");
+                    setError("Invalid or expired reset link in catch block.");
                 }
             }
         };
