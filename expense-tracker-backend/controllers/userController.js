@@ -320,7 +320,7 @@ const resetPassword = async (req, res) => {
     const { token, newPassword, email } = req.body;
 
     try {
-        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        const existingUser = await User.findOne({ email });
         if (!existingUser) {
             return res.status(404).json({ msg: "User not found" });
         }
