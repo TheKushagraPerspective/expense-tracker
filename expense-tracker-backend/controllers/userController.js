@@ -500,6 +500,7 @@ module.exports = {
     getOTP,
     verifyOTP,
     requestReset,
+    resetPassword,
     getUserDetails,
     updateUser,
     updateCurrency,
