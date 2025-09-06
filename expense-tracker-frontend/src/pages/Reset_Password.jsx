@@ -31,6 +31,7 @@ const Reset_Password = () => {
 
                     if (response.data.success) {
                         setIsVerified(true);
+                        toast.success("Successfully verified the link. Now change the password to re-login");
                     }
                     else {
                         setError("Invalid or expired reset link.");

@@ -333,10 +333,13 @@ const resetPassword = async (req, res) => {
         }
 
         // we can do like this 
+        // Hash new password
         const hashedPassword = await bcrypt.hash(newPassword , 10);
-        const res = await User.findByIdAndUpdate(
+
+        // Update user password securely
+        const updatedUser = await User.findByIdAndUpdate(
             decoded.userId,
-            {password: newPassword},
+            {password: hashedPassword},
             {new: true}
         )
 
