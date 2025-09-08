@@ -5,7 +5,7 @@ import "../styles/auth.css";
 import { toast } from "react-toastify";
 import Lottie from "lottie-react";
 import resetPass from "../assets/reset-pass.json";
-import Modals_ResetPass from "../components/Modal_reset_pass";
+import Modals from "../components/Modals";
 
 const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 
@@ -151,7 +151,12 @@ const Reset_Password = () => {
             </div>
 
             {/* Modal opens if verified */}
-            {isVerified && <Modals_ResetPass token={token} onClose={() => setIsVerified(false)} />}
+            {isVerified && 
+            <Modals 
+                type="reset-password"
+                token={token} 
+                onClose={() => setIsVerified(false)} 
+            />}
         </>
     );
 };

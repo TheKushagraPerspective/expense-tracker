@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import "../styles/auth.css"
 import { toast } from "react-toastify";
-import Modals from "../components/Modal_otp";
+import Modals from "../components/Modals";
 import Lottie from 'lottie-react'
 import emailAnimation from '../assets/Email.json'
 
@@ -64,7 +64,7 @@ const Login = () => {
 
 
         if (response.data.success) {
-            toast.success("Verification Successful, ready to login in 3 seconds")
+            toast.success("Verification Successful, redirecting you to Home page")
             localStorage.setItem("token" , response.data.token);
             localStorage.setItem("user" , JSON.stringify(response.data.userData));
 
@@ -275,7 +275,13 @@ const Login = () => {
 
         </div>
       </div>
-      {showOTPModal && <Modals onClose={() => setShowOTPModal(false)} email={email} handleResendOtp={handleOngetOTP} />}
+      { showOTPModal && 
+        <Modals 
+          type="otp"
+          onClose={() => setShowOTPModal(false)}
+          email={email} 
+          handleResendOtp={handleOngetOTP}
+        />}
     </>
   );
 };

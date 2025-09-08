@@ -44,7 +44,7 @@ const Sidebar = () => {
       <div className={`sm:fixed sm:top-0 sm:left-0 w-full sm:w-64 md:w-72 lg:w-[275px] sm:h-screen text-white p-5 bg-[#0f2c53] flex flex-col ${isMenuOpen ? '' : 'hidden sm:flex'}`}>
         
         <div className="text-center mb-20 text-5xl">
-          <NavLink to="/profile">👤</NavLink>
+          <NavLink onClick={handleLinkClick} to="/profile">👤</NavLink>
         </div>
 
         <div className="mb-20 text-center sm:text-left">
