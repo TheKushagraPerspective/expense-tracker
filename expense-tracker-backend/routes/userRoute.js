@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const {registerUser , Login , getOTP , verifyOTP , requestReset , verifyToken , resetPassword , getUserDetails , updateUser , updateCurrency , updatePassword , deleteAccount} = require("../controllers/userController");
+const {registerUser , Login , getOTP , verifyOTP , requestReset , verifyToken , resetPassword , getUserDetails , updateUser , updateCurrency , updatePassword , deleteAccount , changeProfileImage , removeProfileImage} = require("../controllers/userController");
 const authMiddleware = require("../middleware/authMiddleware");
+const {upload} = require("../middleware/multer");
+
 
 
 // POST /api/user/register
@@ -39,6 +41,12 @@ router.put("/update-password" , authMiddleware , updatePassword);
 
 // DELETE /api/user/delete-account
 router.delete("/delete-account" , authMiddleware , deleteAccount);
+
+// POST /api/user/upload-profile-image
+router.post("/change-profile-image" , authMiddleware , upload.single("file") , changeProfileImage);
+
+// PUT /api/user/delete-profile-image
+router.put("/delete-profile-image" , authMiddleware , removeProfileImage);
 
 
 module.exports = router;

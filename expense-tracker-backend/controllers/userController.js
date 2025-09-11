@@ -5,7 +5,8 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const nodemailer = require("nodemailer");
 const client = require("../utils/redisClient");
-
+const {uploadOnCLoudinary , deleteFromCloudinary} = require("../utils/cloudinaryClient")
+const fs = require("fs")
 
 
 const registerUser = async (req, res) => {
@@ -524,6 +525,85 @@ const deleteAccount = async (req, res) => {
 }
 
 
+const changeProfileImage = async(req , res) => {
+    try {
+        if(!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+
+        const localFilePath = req.file.path;
+
+        // Upload file to Cloudinary
+        const result = await uploadOnCLoudinary(localFilePath);
+
+        // Delete temp file
+        fs.unlink(localFilePath , (err) => {
+            if (err) console.error("Error deleting temp file:", err);
+        })
+
+        if(!result) {
+            return res.status(500).json({ message: "Upload failed" });
+        }
+
+        // Get logged-in user from auth middleware
+        const userId = req.user.userId;
+
+        // Update user profile image
+        const user = await User.findById(userId);
+
+        // If user already has a profile image, you may want to delete old one from Cloudinary
+        // Example:
+        // if (user.cloudinaryId) {
+        //   await cloudinary.uploader.destroy(user.cloudinaryId);
+        // }
+
+        if(user.cloudinaryId) {
+            await deleteFromCloudinary(user.cloudinaryId);
+        }
+
+        user.profileImage = result.secure_url;
+        user.cloudinaryId = result.public_id;
+        await user.save();
+
+        return res.statue(200).json({
+            message: "Profile image updated successfully",
+            url: user.profileImage
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+
+const removeProfileImage = async(req , res) => {
+    try {
+        // Get logged-in user from auth middleware
+        const userId = req.user.userId;
+
+        // Update user profile image
+        const user = await User.findById(userId);
+
+
+        if(!user.cloudinaryId || user.cloudinaryId === undefined) {
+            return res.status(404).json({message : "No Profile Image to Delete"})
+        }
+
+        await deleteFromCloudinary(user.cloudinaryId);
+
+        user.profileImage = undefined;
+        user.cloudinaryId = undefined;
+        await user.save();
+
+        return res.statue(200).json({
+            message: "Profile image successfully deleted",
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+
 
 
 
@@ -539,5 +619,7 @@ module.exports = {
     updateUser,
     updateCurrency,
     updatePassword,
-    deleteAccount
+    deleteAccount,
+    changeProfileImage,
+    removeProfileImage
 }

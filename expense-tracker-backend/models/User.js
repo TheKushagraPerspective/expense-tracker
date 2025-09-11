@@ -25,6 +25,12 @@ const userSchema = new mongoose.Schema({
     currency : {
         type : String,
         default : "INR",
+    },
+    profileImage : {
+        type : String,
+    },
+    cloudinaryId  : {
+        type : String,
     }
 } , {timestamps : true});
 

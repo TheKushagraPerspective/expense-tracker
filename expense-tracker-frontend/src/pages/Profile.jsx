@@ -1,8 +1,9 @@
 import React , {useState , useEffect} from 'react'
 import ProfileImage from "../assets/profile-image.png"
-import { Pencil, Save } from "lucide-react"; 
+import { Pencil, Save, SquarePen  } from "lucide-react"; 
 import axios from "axios";
 import { toast } from 'react-toastify';
+import Modals from '../components/Modals'
 
 
 const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
@@ -10,41 +11,103 @@ const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
 
 const Profile = () => {
 
+  const [userData , setUserData] = useState(null);
   const [token , setToken] = useState("");
-  const [user , setUser] = useState(null);
   const [isEditing , setIsEditing] = useState({
     name : false,
     mobile : false,
   });
 
   const [formData , setFormData] = useState({
-    name : user?.name || "",
-    mobile : user?.mobile || "",
+    name : userData?.name || "",
+    mobile : userData?.mobile || "",
   });
+  const [showImageCHangeModal , setShowImageChangeModal] = useState(false);
+
+
+  const fetchUserDetails = async() => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/user/profile` , {
+        headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+      });
+
+      setUserData(response.data);
+    } catch (error) {
+      console.log("Error in fetching user details: ", error);
+    }
+  }
 
 
   useEffect(() => {
       const token = localStorage.getItem("token");
       const userFromStorage = localStorage.getItem("user");
-      
+
       if(token && userFromStorage) {
-          try {
-            
-            const userData = JSON.parse(userFromStorage);
-            setUser(userData);
-            setToken(token);
-            
-          } catch (error) {
-            console.log("Invalid Token");
-          }
+          setToken(token);
+          fetchUserDetails();
       }
   } , []);
+
+
+  const handleOnChangeImage = () => {
+    setShowImageChangeModal(true);
+  }
+
+  const handleImageUpload = async(file) => {
+    if(!file) {
+      return ;
+    }
+
+    const formData = new FormData();
+    formData.append("file" , file);
+
+    try {
+      const response = await axios.post(`${BASE_URL}/api/user/change-profile-image` , 
+        formData , 
+        {
+          headers : {
+            Authorization : `Bearer ${token}`,
+            "Content-Type" : "multipart/form-data"
+          }
+        }
+      );
+
+      await fetchUserDetails();
+      setShowImageChangeModal(false);
+    } catch (error) {
+      console.error("Error uploading profile image:", error);
+      res.status(500).json({ msg: "Server error" });
+    }
+  }
+
+
+  const handleOnDeleteImage = async() => {
+    try {
+      const response = await axios.put(`${BASE_URL}/api/user/delete-profile-image` , 
+        {
+          headers : {
+            Authorization : `Bearer ${token}`,
+            "Content-Type" : "multipart/form-data"
+          }
+        }
+      );
+
+      await fetchUserDetails();
+      setShowImageChangeModal(false);
+    } catch (error) {
+      console.error("Error deleting profile image:", error);
+      res.status(500).json({ msg: "Server error" });
+    }
+  }
+
 
 
 
   const handleOnEditClick = (field) => {
       setIsEditing((prev) => ({...prev , [field] : true}));
-      setFormData((prev) => ({...prev , [field] : user[field] || ""}));
+      setFormData((prev) => ({...prev , [field] : userData[field] || ""}));
   }
 
 
@@ -56,7 +119,7 @@ const Profile = () => {
   const handleOnSave = async(field) => {
       try {
 
-        if(user) {
+        if(userData) {
             const response = await axios.put(`${BASE_URL}/api/user` , {
               [field] : formData[field]
             },
@@ -70,8 +133,8 @@ const Profile = () => {
                 localStorage.setItem("user" , JSON.stringify(response.data.userData));
             }
 
-
-            setUser((prev) => ({...prev , [field]: formData[field]}));
+            // fetch latest data from backend to stay in sync
+            await fetchUserDetails();
             setIsEditing((prev) => ({...prev , [field] : false}));  
             
             toast.success(`Successfully updated the '${field}' field`);
@@ -95,12 +158,17 @@ const Profile = () => {
           <div className='w-full max-w-md bg-white rounded-xl py-8 md:py-14 text-center shadow-xl bg-gradient-to-br from-green-100 via-teal-100 to-blue-100'>
 
             {/* Avatar */}
-              <div>
-                  <img src={ProfileImage} alt="Profile" className="w-36 h-36 rounded-full mx-auto border-4 border-green-300 object-cover" />
+              <div className='relative w-36 h-36 mx-auto'>
+                  <img src={userData?.imageURL ? userData.imageURL : ProfileImage} alt="Profile" className="w-36 h-36 rounded-full mx-auto border-4 border-green-300 object-cover" />
+                  <div>
+                    <button className='absolute bottom-3 right-1 bg-white p-2 rounded-full shadow-md hover:bg-gray-100' onClick={handleOnChangeImage}>
+                          <SquarePen  className="w-5 h-5 text-gray-600 hover:text-gray-800" />
+                    </button>
+                  </div>
               </div>
 
             {/* User Info */}
-              {user ? (
+              {userData ? (
                 <>
                     <div className="flex justify-center items-center gap-2 mb-2">
                       {/* Name Editing */}
@@ -119,7 +187,7 @@ const Profile = () => {
                           ) : (
                             <>
                                 <h2 className="text-2xl font-semibold text-gray-800">
-                                  {user.name || "Name not available"}
+                                  {userData.name || "Name not available"}
                                 </h2>
                                 <button onClick={() => handleOnEditClick("name")}>
                                   <Pencil className="w-5 h-5 text-gray-600 hover:text-gray-800" />
@@ -128,7 +196,7 @@ const Profile = () => {
                           )}
                     </div>
 
-                    <p className="text-gray-600 font-semibold mb-1">{user.email || "Email not found"}</p>
+                    <p className="text-gray-600 font-semibold mb-1">{userData.email || "Email not found"}</p>
 
                     <div className="flex justify-center items-center gap-2 mb-1">
                       {/* Name Editing */}
@@ -147,7 +215,7 @@ const Profile = () => {
                           ) : (
                             <>
                                 <p className=" font-semibold text-gray-600">
-                                  {user.mobile || "Mobile not available"}
+                                  {userData.mobile || "Mobile not available"}
                                 </p>
                                 <button onClick={() => handleOnEditClick("mobile")}>
                                   <Pencil className="w-5 h-5 text-gray-600 hover:text-gray-800" />
@@ -164,10 +232,17 @@ const Profile = () => {
               )}
 
           </div>
-        
       </div>
-
+      
+      {showImageCHangeModal && 
+      <Modals
+      type="image-change"
+      onClose={() => setShowImageChangeModal(false)}
+      onUpload={handleImageUpload}
+      onDelete={handleOnDeleteImage}
+      />}
     </>
+
   )
 }
 
