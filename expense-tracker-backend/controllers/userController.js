@@ -140,10 +140,12 @@ const getOTP = async (req, res) => {
 
         // Send OTP via mail
         const transporter = nodemailer.createTransport({
-            service: "gmail",
+            host: "smtp.gmail.com",
+            port: 465, // secure port
+            secure: true, // true for 465
             auth: {
-                user: process.env.Email_User,
-                pass: process.env.Email_Password,
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD,
             }
         });
 
