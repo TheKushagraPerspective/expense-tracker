@@ -151,7 +151,20 @@ const getOTP = async (req, res) => {
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Your OTP Code",
-            text: `Your OTP is ${otpSixDigit}. It expires in 5 minutes.`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <p>Hi ${existingUser.name},</p>
+                    <h2 style="color: #333;">Your OTP Code</h2>
+                    <p>Your OTP for Expense Tracker is:</p>
+                    <div style="background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 3px; margin: 20px 0;">
+                    ${otp}
+                    </div>
+                    <p><strong>This OTP expires in 5 minutes.</strong></p>
+                    <p>If you didn't request this OTP, please ignore this email.</p>
+                </div>
+                `,
+            text: `Hi ${existingUser.name},\nYour OTP is ${otp}. It expires in 5 minutes.`
+
         }
 
         try {
@@ -269,10 +282,31 @@ const requestReset = async (req, res) => {
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Reset your Expense Tracker password",
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #333;">Password Reset Request</h2>
+                    <p>Hi ${existingUser.name},</p>
+                    <p>We received a request to reset your Expense Tracker password.</p>
+                    <p>
+                    Click the button below to reset it. This link is valid for 
+                    <strong>15 minutes</strong>.
+                    </p>
+                    <div style="margin: 20px 0; text-align: center;">
+                    <a href="https://expense-tracker-frontend-71kl.onrender.com/#/reset-password?token=${resetToken}"
+                        style="background-color: #4CAF50; color: white; padding: 12px 20px; 
+                                text-decoration: none; border-radius: 5px; font-weight: bold;">
+                        Reset Password
+                    </a>
+                    </div>
+                    <p>If you didn’t request this, you can safely ignore this email.</p>
+                    <p style="color: #888; font-size: 12px;">This link will expire in 15 minutes.</p>
+                </div>
+            `,
             text: `Hi ${existingUser.name},
-                Click the link below to reset your password. This link is valid for 15 minutes:
-                https://expense-tracker-frontend-71kl.onrender.com/#/reset-password?token=${resetToken}
-                If you didn’t request this, you can ignore this email.`,
+                   Click the link below to reset your password. This link is valid for 15 minutes:
+                   https://expense-tracker-frontend-71kl.onrender.com/#/reset-password?token=${resetToken}
+                   If you didn’t request this, you can ignore this email.`,
+
         }
 
         try {
