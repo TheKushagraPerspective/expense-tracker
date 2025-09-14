@@ -140,9 +140,7 @@ const getOTP = async (req, res) => {
 
         // Send OTP via mail
         const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465, // secure port
-            secure: true, // true for 465
+            service: "gmail",
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASSWORD,
@@ -150,7 +148,7 @@ const getOTP = async (req, res) => {
         });
 
         const mailOptions = {
-            from: process.env.Email_User,
+            from: process.env.EMAIL_USER,
             to: email,
             subject: "Your OTP Code",
             text: `Your OTP is ${otpSixDigit}. It expires in 5 minutes.`,
@@ -260,17 +258,15 @@ const requestReset = async (req, res) => {
         );
 
         const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465, // secure port
-            secure: true, // true for 465
+            service: "gmail",
             auth: {
-                user: process.env.Email_User,
-                pass: process.env.Email_Password,
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD,
             }
         });
 
         const mailOptions = {
-            from: process.env.Email_User,
+            from: process.env.EMAIL_USER,
             to: email,
             subject: "Reset your Expense Tracker password",
             text: `Hi ${existingUser.name},
