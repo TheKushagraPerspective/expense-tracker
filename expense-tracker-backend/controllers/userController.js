@@ -3,10 +3,12 @@ const Category = require("../models/Category");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const nodemailer = require("nodemailer");
 const client = require("../utils/redisClient");
 const {uploadOnCLoudinary , deleteFromCloudinary} = require("../utils/cloudinaryClient")
 const fs = require("fs")
+
+// Import the robust email service
+const emailService = require("../utils/emailService");
 
 
 const registerUser = async (req, res) => {
@@ -91,7 +93,7 @@ const Login = async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, existingUser.password);
         if (!isMatch) {
-            return res.status(402).json({ msg: "incorrect password" });
+            return res.status(401).json({ msg: "incorrect password" });
         }
 
         // Generate main login token
@@ -117,7 +119,8 @@ const Login = async (req, res) => {
         });
 
     } catch (error) {
-
+        console.log("Error in Login ", error);
+        return res.status(500).json({ message: "Server error", error })
     }
 
 }
@@ -138,41 +141,22 @@ const getOTP = async (req, res) => {
 
         const otpSixDigit = Math.floor(100000 + Math.random() * 900000).toString();   // 6-digit otp
 
-        // Send OTP via mail
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD,
-            }
-        });
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Your OTP Code",
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <p>Hi ${existingUser.name},</p>
-                    <h2 style="color: #333;">Your OTP Code</h2>
-                    <p>Your OTP for Expense Tracker is:</p>
-                    <div style="background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 3px; margin: 20px 0;">
-                    ${otp}
-                    </div>
-                    <p><strong>This OTP expires in 5 minutes.</strong></p>
-                    <p>If you didn't request this OTP, please ignore this email.</p>
-                </div>
-                `,
-            text: `Hi ${existingUser.name},\nYour OTP is ${otp}. It expires in 5 minutes.`
-
-        }
+        console.log(`📧 Attempting to send OTP to ${email}`);
 
         try {
-            const info = await transporter.sendMail(mailOptions);
-            console.log("Email sent: ", info.response);
-        } catch (err) {
-            console.error("Email error: ", err);
-            return res.status(500).json({ success: false, msg: "Error in sending mail" });
+            const emailResult = await emailService.sendOTP(email , otpSixDigit , existingUser.name);
+
+            console.log(`✅ OTP email sent successfully:`, {
+                messageId: emailResult.messageId,
+                configUsed: emailResult.configUsed,
+                attempt: emailResult.attempt
+            })
+        } catch (error) {
+             console.error("❌ All email configurations failed:", error.message);
+            return res.status(500).json({ 
+                success: false, 
+                msg: "Unable to send OTP email at this time. Please try again later." 
+            });
         }
 
         // Store OTP with 5 minutes expiry
@@ -270,51 +254,22 @@ const requestReset = async (req, res) => {
             },
         );
 
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD,
-            }
-        });
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Reset your Expense Tracker password",
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #333;">Password Reset Request</h2>
-                    <p>Hi ${existingUser.name},</p>
-                    <p>We received a request to reset your Expense Tracker password.</p>
-                    <p>
-                    Click the button below to reset it. This link is valid for 
-                    <strong>15 minutes</strong>.
-                    </p>
-                    <div style="margin: 20px 0; text-align: center;">
-                    <a href="https://expense-tracker-frontend-71kl.onrender.com/#/reset-password?token=${resetToken}"
-                        style="background-color: #4CAF50; color: white; padding: 12px 20px; 
-                                text-decoration: none; border-radius: 5px; font-weight: bold;">
-                        Reset Password
-                    </a>
-                    </div>
-                    <p>If you didn’t request this, you can safely ignore this email.</p>
-                    <p style="color: #888; font-size: 12px;">This link will expire in 15 minutes.</p>
-                </div>
-            `,
-            text: `Hi ${existingUser.name},
-                   Click the link below to reset your password. This link is valid for 15 minutes:
-                   https://expense-tracker-frontend-71kl.onrender.com/#/reset-password?token=${resetToken}
-                   If you didn’t request this, you can ignore this email.`,
-
-        }
+        console.log(`📧 Attempting to send password reset to ${email}`);
 
         try {
-            const info = await transporter.sendMail(mailOptions);
-            console.log("Email sent: ", info.response);
-        } catch (err) {
-            console.error("Email error: ", err);
-            return res.status(500).json({ success: false, msg: "Error in sending mail" });
+            const emailResult = await emailService.sendPasswordReset(email , existingUser.name , resetToken);
+
+            console.log(`✅ Password reset email sent successfully:`, {
+                messageId: emailResult.messageId,
+                configUsed: emailResult.configUsed,
+                attempt: emailResult.attempt
+            });
+        } catch (error) {
+            console.error("❌ All email configurations failed:", error.message);
+            return res.status(500).json({ 
+                success: false, 
+                msg: "Unable to send reset email at this time. Please try again later." 
+            });
         }
 
         return res.status(200).json({
@@ -364,7 +319,7 @@ const resetPassword = async (req, res) => {
 
         const isMatch = await bcrypt.compare(newPassword , existingUser.password);
         if(isMatch) {
-            return res.status(404).json({success: false , msg: "New Password must be different from Old Password"})
+            return res.status(400).json({success: false , msg: "New Password must be different from Old Password"})
         }
 
         // we can do like this 
@@ -599,7 +554,7 @@ const changeProfileImage = async(req , res) => {
         user.cloudinaryId = result.public_id;
         await user.save();
 
-        return res.statue(200).json({
+        return res.status(200).json({
             message: "Profile image updated successfully",
             url: user.profileImage
         });
@@ -629,7 +584,7 @@ const removeProfileImage = async(req , res) => {
         user.cloudinaryId = undefined;
         await user.save();
 
-        return res.statue(200).json({
+        return res.status(200).json({
             message: "Profile image successfully deleted",
         });
     } catch (error) {
