@@ -88,7 +88,7 @@ const Profile = () => {
       const response = await axios.put(`${BASE_URL}/api/user/delete-profile-image` , 
         {
           headers : {
-            Authorization : `Bearer ${token}`,
+            Authorization : `Bearer ${localStorage.getItem("token")}`,
             "Content-Type" : "multipart/form-data"
           }
         }
@@ -98,7 +98,7 @@ const Profile = () => {
       setShowImageChangeModal(false);
     } catch (error) {
       console.error("Error deleting profile image:", error);
-      res.status(500).json({ msg: "Server error" });
+      // res.status(500).json({ msg: "Server error" });
     }
   }
 
