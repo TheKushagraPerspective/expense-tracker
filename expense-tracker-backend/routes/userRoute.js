@@ -46,7 +46,7 @@ router.delete("/delete-account" , authMiddleware , deleteAccount);
 router.post("/change-profile-image" , authMiddleware , upload.single("file") , changeProfileImage);
 
 // PUT /api/user/delete-profile-image
-router.put("/delete-profile-image" , authMiddleware , removeProfileImage);
+router.delete("/delete-profile-image" , authMiddleware , removeProfileImage);
 
 
 module.exports = router;

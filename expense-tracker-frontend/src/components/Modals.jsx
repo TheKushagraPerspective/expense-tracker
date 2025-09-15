@@ -130,21 +130,6 @@ const Modals = ({ type, onClose, email, handleResendOtp, token, onUpload, onDele
 
 
   // when case is image-change
-  const [selectedFile, setSelectedFile] = useState(null);
-
-
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
-  }
-
-
-  const handleOnChangeImage = () => {
-    if (selectedFile) {
-      onUpload(selectedFile)
-    }
-  }
-
-
   const handleOnDeleteImage = () => {
     onDelete();
   }
@@ -263,7 +248,7 @@ const Modals = ({ type, onClose, email, handleResendOtp, token, onUpload, onDele
           <ModalWrapper onClose={onClose}>
 
             {/* Content */}
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Change Profile Image</h2>
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">🖼️ Change Profile Image</h2>
 
             {/* Illustration */}
             <div className="flex justify-center mb-6">
@@ -275,33 +260,28 @@ const Modals = ({ type, onClose, email, handleResendOtp, token, onUpload, onDele
             </div>
 
 
-            {/* File Input */}
+            {/* Hidden File Input */}
             <div className="mb-6">
-              <label
-                htmlFor="file-upload"
-                className="block text-sm font-medium text-gray-700 mb-2 text-center"
-              >
-                Upload a new profile picture
-              </label>
               <input
                 type="file"
-                id="file-upload"
+                id="hidden-file-upload"
                 accept="image/*"
-                onChange={handleFileChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 
-                                      file:rounded-full file:border-0 file:text-sm file:font-semibold 
-                                      file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 cursor-pointer"
+                className="hidden"
+                onChange={(e) => {
+                  if(e.target.files && e.target.files[0]) {
+                    onUpload(e.target.files[0]);
+                  }
+                }}
               />
             </div>
             {/* Action Buttons */}
             <div className="flex justify-between mt-6">
               <button
                 className="flex-1 mr-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow 
-                     hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                onClick={handleOnChangeImage}
-                disabled={!selectedFile}
+                 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                onClick={() => document.getElementById("hidden-file-upload").click()}
               >
-                Save Changes
+                Upload Image
               </button>
 
               <button

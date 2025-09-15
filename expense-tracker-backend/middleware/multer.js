@@ -1,6 +1,17 @@
 const multer = require("multer");
 require("dotenv").config();
 
+
+const fs = require("fs");
+
+// ✅ Ensure the folder exists before multer tries to use it
+const dir = "./public/temp";
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir, { recursive: true });
+}
+
+
+
 const storage = multer.diskStorage({
     destination: function(req , file , cb) {
         cb(null , "./public/temp")

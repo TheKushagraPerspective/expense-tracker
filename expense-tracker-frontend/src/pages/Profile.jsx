@@ -33,7 +33,7 @@ const Profile = () => {
             }
       });
 
-      setUserData(response.data);
+      setUserData(response.data.data);
     } catch (error) {
       console.log("Error in fetching user details: ", error);
     }
@@ -51,6 +51,8 @@ const Profile = () => {
   } , []);
 
 
+
+  // code for profile image change/remove
   const handleOnChangeImage = () => {
     setShowImageChangeModal(true);
   }
@@ -68,8 +70,7 @@ const Profile = () => {
         formData , 
         {
           headers : {
-            Authorization : `Bearer ${token}`,
-            "Content-Type" : "multipart/form-data"
+            Authorization : `Bearer ${localStorage.getItem("token")}`,
           }
         }
       );
@@ -78,14 +79,15 @@ const Profile = () => {
       setShowImageChangeModal(false);
     } catch (error) {
       console.error("Error uploading profile image:", error);
-      res.status(500).json({ msg: "Server error" });
+      // res.status(500).json({ msg: "Server error" });
     }
   }
 
 
   const handleOnDeleteImage = async() => {
     try {
-      const response = await axios.put(`${BASE_URL}/api/user/delete-profile-image` , 
+      const response = await axios.delete(`${BASE_URL}/api/user/delete-profile-image` , 
+        {}, // no body needed
         {
           headers : {
             Authorization : `Bearer ${localStorage.getItem("token")}`,
@@ -104,7 +106,7 @@ const Profile = () => {
 
 
 
-
+// code for edit/update user details
   const handleOnEditClick = (field) => {
       setIsEditing((prev) => ({...prev , [field] : true}));
       setFormData((prev) => ({...prev , [field] : userData[field] || ""}));

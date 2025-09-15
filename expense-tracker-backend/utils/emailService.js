@@ -1,63 +1,44 @@
 const nodemailer = require("nodemailer");
 
-class RenderEmailService {
+class AlternativeEmailService  {
 
     constructor() {
-        this.configurations = [
-            // Configuration 1: Gmail service with extended timeouts
+        this.services  = [
+            // 1. SendGrid (Most reliable on Render)
             {
-                name: "Gmail Service",
-                service: "gmail",
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD,
-                },
-            },
-            // Configuration 2: SMTP with port 587 (TLS)
-            {
-                name: "SMTP Port 587",
-                host: "smtp.gmail.com",
+                name: "SendGrid",
+                host: "smtp.sendgrid.net",
                 port: 587,
                 secure: false,
                 auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD,
+                    user: "apikey", // Always "apikey" for SendGrid
+                    pass: process.env.SENDGRID_API_KEY, // Your SendGrid API key
                 },
-                requireTLS: true,
+                tls: { rejectUnauthorized: false }
             },
-            // Configuration 3: SMTP with port 465 (SSL)
             {
-                name: "SMTP Port 465",
+                name: "Gmail",
                 host: "smtp.gmail.com",
                 port: 465,
                 secure: true,
                 auth: {
                     user: process.env.EMAIL_USER,
                     pass: process.env.EMAIL_PASSWORD,
-                },
+                }
             },
-            // Configuration 4: Alternative with different settings
-            {
-                name: "Gmail Alt Config",
-                host: "smtp.gmail.com",
-                port: 25,
-                secure: false,
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD,
-                },
-                requireTLS: true,
-            }
         ];
     }
 
 
     // Tries each config until one works
-    async sendEmail(mailOptions , maxRetries = 4) {
+    async sendEmail(mailOptions , maxRetries = 2) {
         let lastError;
+        const startTime = Date.now();
 
-        for(let attempt = 0; attempt < maxRetries && attempt < this.configurations.length; attempt++) {
-            const config = this.configurations[attempt];
+        console.log(`🚀 Starting email send process...`);
+
+        for(let attempt = 0; attempt < maxRetries && attempt < this.services.length; attempt++) {
+            const config = this.services[attempt];
             console.log(`🔄 Attempting email send with ${config.name} (Attempt ${attempt + 1}/${maxRetries})`);
 
             try {
@@ -83,7 +64,9 @@ class RenderEmailService {
                     )
                 ]);
 
-                console.log(`✅ Email sent successfully via ${config.name}:`, info.messageId);
+                const endTime = Date.now();
+                console.log(`✅ Email sent successfully via ${config.name} in ${endTime - startTime}ms`);
+                console.log(`📧 Message ID: ${info.messageId}`);
                 
                 // Close the transporter to free resources
                 transporter.close();
@@ -91,8 +74,9 @@ class RenderEmailService {
                 return {
                     success: true,
                     messageId: info.messageId,
-                    configUsed: config.name,
-                    attempt: attempt + 1
+                    service: config.name,
+                    attempt: attempt + 1,
+                    duration: endTime - startTime
                 };
             } catch (error) {
                 console.error(`❌ ${config.name} failed:`, error.message);
@@ -122,34 +106,60 @@ class RenderEmailService {
 
     async sendOTP(email , otp , userName) {
         const mailOptions = {
-            from: `"Expense Tracker" <${process.env.EMAIL_USER}>`,
+            from: `"Expense Tracker" <${this.getFromEmail()}>`,
             to: email,
             subject: "Your OTP Code - Expense Tracker",
             html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <p>Hi ${userName},</p>
-                    <h2 style="color: #333;">Your OTP Code</h2>
-                    <p>Your OTP for Expense Tracker is:</p>
-                    <div style="background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 3px; margin: 20px 0;">
-                        ${otp}
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #2c3e50; margin: 0;">Expense Tracker</h1>
                     </div>
-                    <p><strong>This OTP expires in 5 minutes.</strong></p>
-                    <p>If you didn't request this OTP, please ignore this email.</p>
+                    
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; color: white; text-align: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0 0 10px 0;">Hi ${userName}! 👋</h2>
+                        <p style="margin: 0; opacity: 0.9;">Your verification code is ready</p>
+                    </div>
+
+                    <div style="background-color: #f8f9fa; padding: 30px; text-align: center; border-radius: 10px; margin: 20px 0;">
+                        <p style="margin: 0 0 15px 0; color: #666; font-size: 16px;">Your OTP Code:</p>
+                        <div style="font-size: 36px; font-weight: bold; color: #2c3e50; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                            ${otp}
+                        </div>
+                        <p style="margin: 15px 0 0 0; color: #e74c3c; font-weight: bold;">⏰ Expires in 5 minutes</p>
+                    </div>
+
+                    <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 0; color: #856404;">
+                            🔒 <strong>Security Note:</strong> Never share this code with anyone. We'll never ask for it over phone or email.
+                        </p>
+                    </div>
+
+                    <div style="text-align: center; color: #6c757d; font-size: 14px; margin-top: 30px;">
+                        <p>If you didn't request this code, please ignore this email.</p>
+                        <p style="margin: 0;">© 2025 Expense Tracker. All rights reserved.</p>
+                    </div>
                 </div>
             `,
-            text: `Hi ${userName},\nYour OTP is ${otp}. It expires in 5 minutes.`,
+            text: `Hi ${userName}!\n\nYour OTP for Expense Tracker is: ${otp}\n\nThis code expires in 5 minutes.\n\nIf you didn't request this, please ignore this email.\n\n© 2025 Expense Tracker`,
         };
 
         return await this.sendEmail(mailOptions);
     }
 
 
+    getFromEmail() {
+        if (process.env.SENDGRID_FROM_EMAIL) return process.env.SENDGRID_FROM_EMAIL;
+        if (process.env.OUTLOOK_EMAIL) return process.env.OUTLOOK_EMAIL;
+        if (process.env.YAHOO_EMAIL) return process.env.YAHOO_EMAIL;
+        return process.env.EMAIL_USER || 'noreply@example.com';
+    }
+
 
     async sendPasswordReset(email , userName , resetToken) {
         const resetUrl = `https://expense-tracker-frontend-71kl.onrender.com/#/reset-password?token=${resetToken}`;
 
         const mailOptions = {
-            from: `"Expense Tracker" <${process.env.EMAIL_USER}>`,
+            from: `"Expense Tracker" <${this.getFromEmail()}>`,
             to: email,
             subject: "Reset your Expense Tracker password",
             html: `
@@ -178,4 +188,4 @@ class RenderEmailService {
 
 
 // Export singleton instance
-module.exports = new RenderEmailService();
+module.exports = new AlternativeEmailService();

@@ -538,7 +538,7 @@ const changeProfileImage = async(req , res) => {
         const userId = req.user.userId;
 
         // Update user profile image
-        const user = await User.findById(userId);
+        const user = await User.findById({userId});
 
         // If user already has a profile image, you may want to delete old one from Cloudinary
         // Example:
