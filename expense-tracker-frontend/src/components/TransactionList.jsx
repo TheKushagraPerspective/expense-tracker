@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from 'react-toastify';
 
 
-const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const TransactionList = ({userId}) => {
 

@@ -7,7 +7,7 @@ import Lottie from "lottie-react";
 import resetPass from "../assets/reset-pass.json";
 import Modals from "../components/Modals";
 
-const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const Reset_Password = () => {
 

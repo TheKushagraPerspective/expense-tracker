@@ -8,7 +8,7 @@ import Lottie from 'lottie-react'
 import emailAnimation from '../assets/Email.json'
 
 
-const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
 const Login = () => {

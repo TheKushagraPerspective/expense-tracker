@@ -7,7 +7,7 @@ import ModalWrapper from "./ModalWrapper";
 import Lottie from "lottie-react";
 import imageChange from '../assets/image-upload.json'
 
-const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const Modals = ({ type, onClose, email, handleResendOtp, token, onUpload, onDelete }) => {
 

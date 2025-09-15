@@ -36,7 +36,7 @@ const registerUser = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ name, email, password: hashedPassword, mobile });
+        const newUser = new User({ name, email, password: hashedPassword, mobile , profileImage:"" , cloudinaryId:"" });
         await newUser.save();
 
 
@@ -261,7 +261,7 @@ const requestReset = async (req, res) => {
 
             console.log(`✅ Password reset email sent successfully:`, {
                 messageId: emailResult.messageId,
-                configUsed: emailResult.configUsed,
+                service: emailResult.service,
                 attempt: emailResult.attempt
             });
         } catch (error) {
@@ -538,7 +538,7 @@ const changeProfileImage = async(req , res) => {
         const userId = req.user.userId;
 
         // Update user profile image
-        const user = await User.findById({userId});
+        const user = await User.findById(userId);
 
         // If user already has a profile image, you may want to delete old one from Cloudinary
         // Example:
@@ -561,6 +561,7 @@ const changeProfileImage = async(req , res) => {
 
     } catch (error) {
         res.status(500).json({ message: error.message });
+        console.log("Error in catch");
     }
 }
 
@@ -575,20 +576,23 @@ const removeProfileImage = async(req , res) => {
 
 
         if(!user.cloudinaryId || user.cloudinaryId === undefined) {
-            return res.status(404).json({message : "No Profile Image to Delete"})
+            return res.status(404).json({success: false , message : "No Profile Image to Delete"})
         }
 
-        await deleteFromCloudinary(user.cloudinaryId);
+        if(user.cloudinaryId) {
+            await deleteFromCloudinary(user.cloudinaryId);
+        }
 
-        user.profileImage = undefined;
-        user.cloudinaryId = undefined;
+        user.profileImage = "";
+        user.cloudinaryId = "";
         await user.save();
 
         return res.status(200).json({
+            success: true,
             message: "Profile image successfully deleted",
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false , message: error.message });
     }
 }
 

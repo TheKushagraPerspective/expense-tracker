@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import Modals from '../components/Modals'
 
 
-const BASE_URL = "https://expense-tracker-backend-ge75.onrender.com";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
 const Profile = () => {
@@ -71,6 +71,7 @@ const Profile = () => {
         {
           headers : {
             Authorization : `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "multipart/form-data",
           }
         }
       );
@@ -78,8 +79,13 @@ const Profile = () => {
       await fetchUserDetails();
       setShowImageChangeModal(false);
     } catch (error) {
-      console.error("Error uploading profile image:", error);
-      // res.status(500).json({ msg: "Server error" });
+      if (error.response) {
+        console.error("Upload failed:", error.response.data);
+      } else if (error.request) {
+        console.error("No response from server:", error.request);
+      } else {
+        console.error("Error setting up request:", error.message);
+      }
     }
   }
 
@@ -87,7 +93,6 @@ const Profile = () => {
   const handleOnDeleteImage = async() => {
     try {
       const response = await axios.delete(`${BASE_URL}/api/user/delete-profile-image` , 
-        {}, // no body needed
         {
           headers : {
             Authorization : `Bearer ${localStorage.getItem("token")}`,
@@ -99,8 +104,17 @@ const Profile = () => {
       await fetchUserDetails();
       setShowImageChangeModal(false);
     } catch (error) {
-      console.error("Error deleting profile image:", error);
-      // res.status(500).json({ msg: "Server error" });
+      if (error.response && error.response.data && error.response.data.message) {
+          toast.info(error.response.data.message);
+      }
+      else {
+        console.error("Error deleting profile image:", error);
+        // res.status(500).json({ msg: "Server error" });
+      }
+      
+      setTimeout(() => {
+        setShowImageChangeModal(false);
+      } , 1000);
     }
   }
 
@@ -161,7 +175,7 @@ const Profile = () => {
 
             {/* Avatar */}
               <div className='relative w-36 h-36 mx-auto'>
-                  <img src={userData?.imageURL ? userData.imageURL : ProfileImage} alt="Profile" className="w-36 h-36 rounded-full mx-auto border-4 border-green-300 object-cover" />
+                  <img src={userData?.profileImage ? userData.profileImage : ProfileImage} alt="Profile" className="w-36 h-36 rounded-full mx-auto border-4 border-green-300 object-cover" />
                   <div>
                     <button className='absolute bottom-3 right-1 bg-white p-2 rounded-full shadow-md hover:bg-gray-100' onClick={handleOnChangeImage}>
                           <SquarePen  className="w-5 h-5 text-gray-600 hover:text-gray-800" />
