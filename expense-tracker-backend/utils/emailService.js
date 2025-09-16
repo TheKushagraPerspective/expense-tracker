@@ -1,112 +1,63 @@
 const nodemailer = require("nodemailer");
+const sgMail = require("@sendgrid/mail")
 
 class AlternativeEmailService  {
 
     constructor() {
-        this.services  = [
-            // 1. SendGrid (Most reliable on Render)
-            {
-                name: "SendGrid",
-                host: "smtp.sendgrid.net",
-                port: 587,
-                secure: false,
-                auth: {
-                    user: "apikey", // Always "apikey" for SendGrid
-                    pass: process.env.SENDGRID_API_KEY, // Your SendGrid API key
-                },
-                tls: { rejectUnauthorized: false }
-            },
-            {
-                name: "Gmail",
-                host: "smtp.gmail.com",
-                port: 465,
-                secure: true,
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD,
-                }
-            },
-        ];
+
+        // Set up SendGrid API
+        if(process.env.SENDGRID_API_KEY) {
+            sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+        }
+
     }
 
 
-    // Tries each config until one works
-    async sendEmail(mailOptions , maxRetries = 2) {
+    
+    async sendEmail(mailOptions) {
         let lastError;
         const startTime = Date.now();
 
         console.log(`🚀 Starting email send process...`);
 
-        for(let attempt = 0; attempt < maxRetries && attempt < this.services.length; attempt++) {
-            const config = this.services[attempt];
-            console.log(`🔄 Attempting email send with ${config.name} (Attempt ${attempt + 1}/${maxRetries})`);
+        if(process.env.SENDGRID_API_KEY) {
+            console.log(`🔄 Attempting email send with SendGrid API`);
 
             try {
-                const transporter = nodemailer.createTransport(config);
-
-                 // Test the connection first
-                console.log(`🔍 Verifying connection for ${config.name}...`);
-                await Promise.race([
-                    transporter.verify(),
-                    new Promise((_ , reject) => 
-                        setTimeout(() => reject(new Error("Verification Timeout")) , 30000)    //after 30 sec
-                    )
-                ]);
-
-                console.log(`✅ Connection verified for ${config.name}`);
-
-                // Send the email
-                console.log(`📧 Sending email via ${config.name}...`);
-                const info = await Promise.race([
-                    transporter.sendMail(mailOptions),
-                    new Promise((_ , reject) => 
-                        setTimeout(() => reject(new Error("Send Timeout")) , 60000)    //after 60 sec
-                    )
-                ]);
+                console.log(`📧 Sending email via SendGrid API`);
+                const result = await sgMail.send(mailOptions);
 
                 const endTime = Date.now();
-                console.log(`✅ Email sent successfully via ${config.name} in ${endTime - startTime}ms`);
-                console.log(`📧 Message ID: ${info.messageId}`);
-                
-                // Close the transporter to free resources
-                transporter.close();
-                
+                console.log(`✅ Email sent successfully via SendGrid API in ${endTime - startTime}ms`);
+
                 return {
                     success: true,
-                    messageId: info.messageId,
-                    service: config.name,
-                    attempt: attempt + 1,
+                    messageId: result[0].headers['x-message-id'] || 'sendgrid-api',
+                    service: "SendGrid API",
+                    attempt: 1,
                     duration: endTime - startTime
-                };
-            } catch (error) {
-                console.error(`❌ ${config.name} failed:`, error.message);
-                lastError = error;
-
-                // If it's not a connection timeout, don't try other configs
-                if (error.code !== 'ETIMEDOUT' && 
-                    error.code !== 'ECONNECTION' && 
-                    error.code !== 'ENOTFOUND' &&
-                    !error.message.includes('timeout')) {
-                    console.log(`🚫 Non-connection error, stopping retries: ${error.message}`);
-                    break;
                 }
 
-                // Wait a bit before trying the next configuration
-                if (attempt < maxRetries - 1) {
-                    console.log(`⏳ Waiting 2 seconds before next attempt...`);
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+            } catch (error) {
+                console.error(`❌ SendGrid API failed:`, error.message);
+                lastError = error;
+                
+                // If it's an auth error, don't try SMTP
+                if (error.code === 401 || error.code === 403) {
+                    throw new Error(`SendGrid authentication failed: ${error.message}`);
                 }
             }
         }
 
-        console.error(`❌ All email configurations failed. Last error:`, lastError);
-        throw new Error(`Email sending failed after ${maxRetries} attempts. Last error: ${lastError.message}`);
+
+        console.error(`❌ All email configurations failed. Last error:`);
+        throw new Error(`Email sending failed after 1 attempt.`);
     }
 
 
     async sendOTP(email , otp , userName) {
         const mailOptions = {
-            from: `"Expense Tracker" <${this.getFromEmail()}>`,
+            from: `"Expense Tracker" <${process.env.SENDGRID_FROM_EMAIL}>`,
             to: email,
             subject: "Your OTP Code - Expense Tracker",
             html: `
@@ -147,38 +98,57 @@ class AlternativeEmailService  {
     }
 
 
-    getFromEmail() {
-        if (process.env.SENDGRID_FROM_EMAIL) return process.env.SENDGRID_FROM_EMAIL;
-        if (process.env.OUTLOOK_EMAIL) return process.env.OUTLOOK_EMAIL;
-        if (process.env.YAHOO_EMAIL) return process.env.YAHOO_EMAIL;
-        return process.env.EMAIL_USER || 'noreply@example.com';
-    }
 
 
     async sendPasswordReset(email , userName , resetToken) {
-        const resetUrl = `https://expense-tracker-frontend-71kl.onrender.com/#/reset-password?token=${resetToken}`;
+        const resetUrl = `http://localhost:5173/#/reset-password?token=${resetToken}`;
 
         const mailOptions = {
-            from: `"Expense Tracker" <${this.getFromEmail()}>`,
+            from: `"Expense Tracker" <${process.env.SENDGRID_FROM_EMAIL}>`,
             to: email,
             subject: "Reset your Expense Tracker password",
             html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #333;">Password Reset Request</h2>
-                    <p>Hi ${userName},</p>
-                    <p>We received a request to reset your Expense Tracker password.</p>
-                    <p>Click the button below to reset it. This link is valid for <strong>15 minutes</strong>.</p>
-                    <div style="margin: 20px 0; text-align: center;">
-                        <a href="${resetUrl}"
-                           style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            Reset Password
-                        </a>
-                    </div>
-                    <p>If you didn't request this, you can safely ignore this email.</p>
-                    <p style="color: #888; font-size: 12px;">This link will expire in 15 minutes.</p>
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #333; margin-bottom: 20px;">Password Reset Request</h2>
+                <p style="margin-bottom: 15px;">Hi ${userName},</p>
+                <p style="margin-bottom: 15px;">We received a request to reset your Expense Tracker password.</p>
+                <p style="margin-bottom: 20px;">Click the button below to reset it. This link is valid for <strong>15 minutes</strong>.</p>
+                
+                <!-- Button with better compatibility -->
+                <div style="margin: 30px 0; text-align: center;">
+                    <table role="presentation" style="margin: 0 auto;">
+                        <tr>
+                            <td style="background-color: #4CAF50; border-radius: 5px; padding: 0;">
+                                <a href="${resetUrl}" 
+                                   target="_blank"
+                                   style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; line-height: 1.2;">
+                                    Reset Password
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
+                
+                <!-- Fallback link -->
+                <p style="margin: 20px 0; font-size: 14px; color: #666;">
+                    If the button doesn't work, copy and paste this link into your browser:
+                </p>
+                <p style="word-break: break-all; background-color: #f5f5f5; padding: 10px; border-radius: 3px; font-family: monospace; font-size: 12px;">
+                    <a href="${resetUrl}" target="_blank" style="color: #4CAF50; text-decoration: underline;">
+                        ${resetUrl}
+                    </a>
+                </p>
+                
+                <p style="margin-top: 30px;">If you didn't request this, you can safely ignore this email.</p>
+                <p style="color: #888; font-size: 12px; margin-top: 20px;">This link will expire in 15 minutes for security reasons.</p>
+            </div>
             `,
-            text: `Hi ${userName},\nClick the link below to reset your password. This link is valid for 15 minutes:\n${resetUrl}\nIf you didn't request this, you can ignore this email.`,
+            text: `Hi ${userName},
+                    We received a request to reset your Expense Tracker password.
+                    Click the link below to reset your password (valid for 15 minutes):
+                    ${resetUrl}
+                    If you didn't request this, you can safely ignore this email.
+                    This link will expire in 15 minutes for security reasons.`,
         };
 
         return await this.sendEmail(mailOptions);
