@@ -127,7 +127,6 @@ const Login = async (req, res) => {
 
 
 const getOTP = async (req, res) => {
-
     try {
         const { email } = req.body;
         if (!email) {
@@ -139,25 +138,18 @@ const getOTP = async (req, res) => {
             return res.status(401).json({ msg: "User not found" });
         }
 
-        const otpSixDigit = Math.floor(100000 + Math.random() * 900000).toString();   // 6-digit otp
+        const otpSixDigit = Math.floor(100000 + Math.random() * 900000).toString();
 
         console.log(`📧 Attempting to send OTP to ${email}`);
 
-        try {
-            const emailResult = await emailService.sendOTP(email , otpSixDigit , existingUser.name);
+        // Send OTP email
+        const emailResult = await emailService.sendOTP(email, otpSixDigit, existingUser.name);
 
-            console.log(`✅ OTP email sent successfully:`, {
-                messageId: emailResult.messageId,
-                configUsed: emailResult.configUsed,
-                attempt: emailResult.attempt
-            })
-        } catch (error) {
-             console.error("❌ All email configurations failed:", error.message);
-            return res.status(500).json({ 
-                success: false, 
-                msg: "Unable to send OTP email at this time. Please try again later." 
-            });
-        }
+        console.log(`✅ OTP email sent successfully:`, {
+            messageId: emailResult.messageId,
+            attempt: emailResult.attempt,
+            service: emailResult.service,
+        });
 
         // Store OTP with 5 minutes expiry
         await client.set(`otp:${email}`, otpSixDigit.toString(), { ex: 300 });
@@ -168,9 +160,13 @@ const getOTP = async (req, res) => {
         });
 
     } catch (error) {
-        return res.status(500).json({ msg: "Server error in get-otp", error });
+        console.error("❌ Error in getOTP:", error);
+        return res.status(500).json({ 
+            success: false,
+            msg: "Unable to send OTP. Please try again later.",
+            error: error.message 
+        });
     }
-
 }
 
 
