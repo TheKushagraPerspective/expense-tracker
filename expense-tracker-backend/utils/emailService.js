@@ -101,7 +101,7 @@ class AlternativeEmailService  {
 
 
     async sendPasswordReset(email , userName , resetToken) {
-        const resetUrl = `http://localhost:5173/#/reset-password?token=${resetToken}`;
+        const resetUrl = `${process.env.VITE_BASE_URL}/#/reset-password?token=${resetToken}`;
 
         const mailOptions = {
             from: `"Expense Tracker" <${process.env.SENDGRID_FROM_EMAIL}>`,

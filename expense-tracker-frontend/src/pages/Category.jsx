@@ -22,7 +22,7 @@ const Category = () => {
   return (
     <>
         <div className="p-6">
-            <h1 className="text-3xl mb-6 font-bold text-blue-800">Manage Categories</h1>
+            <h1 className="text-2xl sm:text-3xl mb-6 font-bold text-blue-800">Manage Categories</h1>
                 {userId ? <CategoryList userId={userId} /> : <p>Loading Categories...</p>}
         </div>
     </>

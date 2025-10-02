@@ -1,6 +1,8 @@
 import React , {useState , useEffect} from 'react'
 import axios from "axios";
 import { toast } from 'react-toastify';
+import Lottie from 'lottie-react';
+import loadingAnimation from '../assets/Trail_loading.json';
 
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -24,6 +26,7 @@ const TransactionList = ({userId}) => {
     })
     const [page , setPage] = useState(1);
     const [totalPage , setTotalPage] = useState(1);
+    const [loading , setLoading] = useState(true);
 
 
 
@@ -41,6 +44,8 @@ const TransactionList = ({userId}) => {
 
         } catch (error) {
             console.log("Error fetching categories:", error);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -71,6 +76,8 @@ const TransactionList = ({userId}) => {
 
         } catch (error) {
             console.log("Error fetching transaction:", error);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -80,6 +87,9 @@ const TransactionList = ({userId}) => {
         if(userId) {
             fetchCategory();
             fetchTransactions(page);
+        }
+        else {
+            setLoading(false);
         }
     } , [userId , page]);
 
@@ -156,6 +166,24 @@ const TransactionList = ({userId}) => {
     }
 
 
+
+
+    if(loading) {
+        return (
+        <>
+            {/* Illustration */}
+            <div className="flex justify-center items-center h-screen">
+                <Lottie 
+                    animationData={loadingAnimation} 
+                    loop={true} 
+                    style={{ width: 120, height: 120 }} 
+                />
+            </div>
+        </>
+        )
+    }
+
+
   return (
     <>
         <div className="flex flex-col justify-center my-5 gap-10">
@@ -224,6 +252,7 @@ const TransactionList = ({userId}) => {
                 </form>
 
                 {/* Filter Form */}
+                <h3>Refine Your Results</h3>
                 <form onSubmit={handleFilter} className='flex flex-col sm:flex-wrap md:flex-row gap-5 items-center bg-white shadow-md p-4 rounded-lg overflow-x-auto'>
                     <input 
                         type="date" 

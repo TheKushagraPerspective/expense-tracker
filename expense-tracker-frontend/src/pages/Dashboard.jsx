@@ -6,6 +6,8 @@ import ExpensePieChart from '../components/ExpensePieChart';
 import MonthlyBarChart from '../components/MonthlyBarChart';
 import YearlyLineChart from '../components/YearlyLineChart';
 import useCurrentDate from '../CustomHooks/useCurrentDate';
+import Lottie from 'lottie-react';
+import loadingAnimation from '../assets/Trail_loading.json';
 
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -19,6 +21,7 @@ const Dashboard = () => {
   const [income , setIncome] = useState(0);    // current month income
   const [expense , setExpense] = useState(0);   // current month expense
   const [currency , setCurrency] = useState("INR");
+  const [loading , setLoading] = useState(true);
 
 
 
@@ -54,6 +57,9 @@ const Dashboard = () => {
     if(userId) {
         fetchMonthlyTransactions();
         fetchYearlyTransactions();
+    }
+    else {
+      setLoading(false);
     }
   } , [userId, currentMonth, currentYear, lastdateOfMonth]);
 
@@ -97,6 +103,8 @@ const Dashboard = () => {
         console.log(response.data.paginatedTransactions)
       } catch (error) {
         console.log("Error in fetching the transactions" , error);
+      } finally {
+        setLoading(false);
       }
   }
 
@@ -144,8 +152,27 @@ const Dashboard = () => {
         console.log(response.data.paginatedTransactions)
       } catch (error) {
         console.log("Error in fetching the transactions" , error);
+      } finally {
+        setLoading(false);
       }
   }
+
+
+
+  if(loading) {
+        return (
+        <>
+            {/* Illustration */}
+            <div className="flex justify-center items-center h-screen">
+                <Lottie 
+                    animationData={loadingAnimation} 
+                    loop={true} 
+                    style={{ width: 120, height: 120 }} 
+                />
+            </div>
+        </>
+        )
+    }
   
 
   return (

@@ -123,7 +123,7 @@ const YearlyLineChart = ({ filteredYearlyTransactions , currency }) => {
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-md mt-10 h-full">
-      <h2 className="text-lg font-semibold mb-4">Yearly Income vs Expense Trend ({currentYear})</h2>
+      <h2 className="text-xl font-semibold mb-4">Yearly Income vs Expense Trend ({currentYear})</h2>
       <Line data={chartData} options={options} />
     </div>
   );

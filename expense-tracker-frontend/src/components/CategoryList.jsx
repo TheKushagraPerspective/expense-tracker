@@ -1,6 +1,8 @@
 import React , {useState , useEffect , useContext} from 'react'
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import Lottie from 'lottie-react';
+import loadingAnimation from '../assets/Trail_loading.json';
 
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -16,6 +18,7 @@ const CategoryList = ({userId}) => {
         name: "",
         type: "income",
     })
+    const [loading , setLoading] = useState(true);
 
 
     const handleOnSubmit = async(e) => {
@@ -93,6 +96,8 @@ const CategoryList = ({userId}) => {
             setOfferingCategory(allCategories.filter(cat => cat.type === "contribution"));
         } catch (error) {
             console.error("Error fetching categories:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -100,7 +105,32 @@ const CategoryList = ({userId}) => {
         if(userId) {
             fetchCategories();
         }
+        else {
+            setLoading(false);
+        }
     } , [userId]);
+
+
+
+
+
+    if(loading) {
+        return (
+        <>
+            {/* Illustration */}
+            <div className="flex justify-center items-center h-screen">
+                <Lottie 
+                    animationData={loadingAnimation} 
+                    loop={true} 
+                    style={{ width: 120, height: 120 }} 
+                />
+            </div>
+        </>
+        )
+    }
+
+
+
 
 
   return (
@@ -153,7 +183,7 @@ const CategoryList = ({userId}) => {
             </form>
 
             <div className="space-y-10">
-                <div className='mx-5'>
+                <div className='sm:mx-5'>
                     {/* Income categories */}
                     <h1 className='font-semibold mb-4 text-xl text-green-700'>Income Categories</h1>
                     <table className='w-full table-fixed border border-collapse bg-white shadow-sm rounded-md'>
@@ -167,9 +197,9 @@ const CategoryList = ({userId}) => {
                         <tbody>
                             {incomeCategories.length > 0 ? (incomeCategories.map((cat) => (
                                     <tr key={cat._id} className="hover:bg-green-50">
-                                        <td className='p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
-                                        <td className='p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
-                                        <td className='p-3 border pl-5'>
+                                        <td className='text-sm sm:text-[17px] p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
+                                        <td className='text-sm sm:text-[17px] p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
+                                        <td className='text-sm sm:text-[17px] p-3 border sm:pl-5'>
                                             <button className="bg-gradient-to-r from-red-500 to-rose-600 text-white sm:px-4 sm:py-2 px-1.5 py-1.5 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300 cursor-pointer"
                                             onClick={() => handleOnRemove(cat._id)}>
                                                 Remove
@@ -188,7 +218,7 @@ const CategoryList = ({userId}) => {
                     </table>
                 </div>
 
-                <div className='mx-5'>
+                <div className='sm:mx-5'>
                     {/* Expense categories */}
                     <h1 className='font-semibold mb-4 text-xl text-red-700'>Expense Categories</h1>
                     <table className='w-full table-fixed border border-collapse bg-white shadow-sm rounded-md'>
@@ -202,9 +232,9 @@ const CategoryList = ({userId}) => {
                         <tbody>
                             {expenseCategories.length > 0 ? (expenseCategories.map((cat) => (
                                     <tr key={cat._id} className="hover:bg-red-50">
-                                        <td className='p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
-                                        <td className='p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
-                                        <td className='p-3 border pl-5'>
+                                        <td className='text-sm sm:text-[17px] p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
+                                        <td className='text-sm sm:text-[17px] p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
+                                        <td className='text-sm sm:text-[17px] p-3 border sm:pl-5'>
                                             <button className="bg-gradient-to-r from-red-500 to-rose-600 text-white sm:px-4 sm:py-2 px-1.5 py-1.5 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300 cursor-pointer"
                                             onClick={() => handleOnRemove(cat._id)}>
                                                 Remove
@@ -224,9 +254,9 @@ const CategoryList = ({userId}) => {
                 </div>
 
 
-                <div className='mx-5'>
+                <div className='sm:mx-5'>
                     {/* Contribution categories */}
-                    <h1 className='font-semibold mb-4 text-xl text-green-700'>Contribution Categories</h1>
+                    <h1 className='font-semibold mb-4 text-xl text-blue-500'>Contribution Categories</h1>
                     <table className='w-full table-fixed border border-collapse bg-white shadow-sm rounded-md'>
                         <thead className="bg-green-200 text-center">
                             <tr>
@@ -238,9 +268,9 @@ const CategoryList = ({userId}) => {
                         <tbody>
                             {offeringCategory.length > 0 ? (offeringCategory.map((cat) => (
                                     <tr key={cat._id} className="hover:bg-green-50">
-                                        <td className='p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
-                                        <td className='p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
-                                        <td className='p-3 border pl-5'>
+                                        <td className='text-sm sm:text-[17px] p-3 border pl-5 break-words max-w-[100px]'>{cat.name}</td>
+                                        <td className='text-sm sm:text-[17px] p-3 border pl-5 capitalize break-words max-w-[100px]'>{cat.type}</td>
+                                        <td className='text-sm sm:text-[17px] p-3 border sm:pl-5'>
                                             <button className="bg-gradient-to-r from-red-500 to-rose-600 text-white sm:px-4 sm:py-2 px-1.5 py-1.5 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300 cursor-pointer"
                                             onClick={() => handleOnRemove(cat._id)}>
                                                 Remove

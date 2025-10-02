@@ -4,6 +4,8 @@ import { Pencil, Save, SquarePen  } from "lucide-react";
 import axios from "axios";
 import { toast } from 'react-toastify';
 import Modals from '../components/Modals'
+import Lottie from 'lottie-react';
+import loadingAnimation from '../assets/Trail_loading.json';
 
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -23,6 +25,7 @@ const Profile = () => {
     mobile : userData?.mobile || "",
   });
   const [showImageCHangeModal , setShowImageChangeModal] = useState(false);
+  const [loading , setLoading] = useState(true);
 
 
   const fetchUserDetails = async() => {
@@ -36,6 +39,8 @@ const Profile = () => {
       setUserData(response.data.data);
     } catch (error) {
       console.log("Error in fetching user details: ", error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -47,6 +52,9 @@ const Profile = () => {
       if(token && userFromStorage) {
           setToken(token);
           fetchUserDetails();
+      }
+      else {
+        setLoading(false);
       }
   } , []);
 
@@ -160,6 +168,21 @@ const Profile = () => {
         console.error("Error updating name:", error);
         toast.warning("Failed to update name. Please try again.");
       }
+  }
+
+  if(loading) {
+    return (
+      <>
+          {/* Illustration */}
+          <div className="flex justify-center items-center h-screen">
+              <Lottie 
+                animationData={loadingAnimation} 
+                loop={true} 
+                style={{ width: 120, height: 120 }} 
+              />
+          </div>
+      </>
+    )
   }
 
 
