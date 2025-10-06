@@ -28,23 +28,30 @@ const Dashboard = () => {
   // it is used to fetch user data and we are extracting currency from it
   useEffect(() => {
       const fetchProfile = async() => {
+        setLoading(true); // ✅ Start loading immediately on mount
         const token = localStorage.getItem("token");
 
-        if(token) {
-            try {
-              const payload = JSON.parse(atob(token.split(".")[1]));
-              setUserId(payload.userId);
+        if(!token) {
+          setLoading(false);
+          return ;
+        }
 
-              const res = await axios.get(`${BASE_URL}/api/user/profile` , {
-                headers : {
-                  Authorization : `Bearer ${token}`
-                }
-              })
+        try {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          setUserId(payload.userId);
 
-              setCurrency(res.data.data.currency);
-            } catch (err) {
-              console.error("Invalid token");
+          const res = await axios.get(`${BASE_URL}/api/user/profile` , {
+            headers : {
+              Authorization : `Bearer ${token}`
             }
+          });
+
+          setCurrency(res.data.data.currency);
+        } catch (err) {
+          console.error("Invalid token or failed to fetch profile", err);
+          setLoading(false);
+        } finally {
+          setLoading(false);
         }
       };
 
@@ -54,13 +61,23 @@ const Dashboard = () => {
 
   // it is used to fetch transaction monthlywise and yearlywise
   useEffect(() => {
-    if(userId) {
-        fetchMonthlyTransactions();
-        fetchYearlyTransactions();
+    const fetchData = async() => {
+      if(!userId) return ;
+
+      setLoading(true);
+
+      try {
+        await fetchMonthlyTransactions();  // first fetch monthly
+        await fetchYearlyTransactions();   // then fetch yearly
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+      finally {
+        setLoading(false);
+      }
     }
-    else {
-      setLoading(false);
-    }
+
+    fetchData();
   } , [userId, currentMonth, currentYear, lastdateOfMonth]);
 
   
@@ -103,8 +120,6 @@ const Dashboard = () => {
         console.log(response.data.paginatedTransactions)
       } catch (error) {
         console.log("Error in fetching the transactions" , error);
-      } finally {
-        setLoading(false);
       }
   }
 
@@ -152,8 +167,6 @@ const Dashboard = () => {
         console.log(response.data.paginatedTransactions)
       } catch (error) {
         console.log("Error in fetching the transactions" , error);
-      } finally {
-        setLoading(false);
       }
   }
 
